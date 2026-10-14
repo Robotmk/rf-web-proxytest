@@ -1,0 +1,10 @@
+tasks:
+  proxy:
+    shell: robot proxy.robot
+
+condaConfigFile: conda.yaml
+artifactsDir: output
+PATH:
+  - .
+PYTHONPATH:
+  - .

@@ -1,0 +1,9 @@
+# Environment für die Test-Proxies (mitmdump) unter Windows, ohne Docker.
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.12
+  - pip=24.2
+  - pip:
+      - mitmproxy==11.1.3

@@ -1,0 +1,160 @@
+# Proxytest: RCC-Proxyprofil, Env-Variablen und Browser Library
+
+Frage: Über welchen Proxy geht der Traffic eines Robot-Tests mit der Browser Library (Playwright),
+wenn ein RCC-Proxyprofil bzw. `HTTP(S)_PROXY`/`NO_PROXY` gesetzt sind? Und was passiert, wenn
+`NO_PROXY` fehlt oder der Proxy Benutzer/Passwort verlangt?
+
+Getestet wird ausschließlich **Browser Library 20.6.0**. Ältere Versionen (vor 20.4.0) hatten einen Fehler,
+durch den die interne gRPC-Kommunikation ohne `NO_PROXY=localhost` nicht mehr funktionierte
+([robotframework-browser#1037](https://github.com/MarketSquare/robotframework-browser/issues/1037)).
+
+## Aufbau
+
+| Komponente | Beschreibung |
+|---|---|
+| Proxy A | `mitmdump` auf `localhost:3128`, wird per RCC-Profil bzw. `HTTP(S)_PROXY` gesetzt |
+| Proxy B | `mitmdump` auf `localhost:3129`, wird nur explizit in `New Browser … proxy=` gesetzt |
+| `proxy.robot` | loggt die Proxy-Variablen, macht einen Python-Kontrollrequest (urllib) und öffnet `http://example.com` + `https://example.org` im Browser |
+| `resources/browser_noproxy.resource` | `New Browser` ohne `proxy` |
+| `resources/browser_proxyB.resource` | `New Browser` mit `proxy={"server": "http://localhost:3129", "bypass": "localhost,127.0.0.1"}`, bei `${PROXY_USER}` zusätzlich `username`/`password` |
+| `robot.yaml` / `conda.yaml` | Browser Library 20.6.0 |
+| `profiles/` | von den Skripten erzeugte RCC-Profile (`proxytest-a[-auth][-nonoproxy].yaml`) |
+| `mitmproxy/` | rcc-Environment und Addon für die Proxies unter Windows (ohne Docker) |
+
+mitmdump bricht TLS auf, damit auch HTTPS-Requests im Log erscheinen. Im Browser ist deshalb `ignoreHTTPSErrors=True` gesetzt.
+
+## Ausführen
+
+### macOS/Linux: `run_scenarios.sh` (Docker + rcc)
+
+```bash
+./run_scenarios.sh                  # Szenarien 1-4, Proxy-Variablen direkt gesetzt (ohne rcc)
+./run_scenarios.sh --rcc            # Szenarien 1-4 mit RCC-Proxyprofil und "rcc task script"
+./run_scenarios.sh --auth           # Proxies mit Benutzer/Passwort
+./run_scenarios.sh --fail           # zusätzlich Szenario 5 (NO_PROXY fehlt)
+./run_scenarios.sh --rcc --auth --fail 5     # kombinierbar, Nummern wählen einzelne Szenarien
+```
+
+- **Ohne `--rcc`:** Das Skript setzt `HTTP_PROXY`, `HTTPS_PROXY`, `http_proxy`, `https_proxy` und ggf. `NO_PROXY`/`no_proxy`
+  selbst, also genau die Variablen, die rcc mit dem entsprechenden Profil setzt. `robot` läuft direkt aus dem
+  Holotree-Environment, das zur `conda.yaml` passt (die Environments müssen einmal von rcc gebaut worden sein).
+- **Mit `--rcc`:** Das Skript erzeugt das passende Profil unter `profiles/`, importiert und aktiviert es
+  (`rcc config import`, `rcc config switch`) und startet `rcc task script -- robot …`. Am Ende wird das vorher
+  aktive Profil wiederhergestellt.
+- **Mit `--auth`:** Beide Proxies verlangen `proxyuser:s3cr3t`. Proxy A bekommt die Zugangsdaten über die URL
+  (`http://proxyuser:s3cr3t@localhost:3128`, in den Env-Variablen bzw. im RCC-Profil), der Browser für Proxy B
+  über `username`/`password` im `proxy`-Dictionary.
+- Die Proxy-Variablen der aufrufenden Shell werden vorher entfernt (siehe Erkenntnis 5).
+- Jeder robot-Lauf wird nach `TIMEOUT` Sekunden (Default 120) samt Kindprozessen beendet.
+
+Ergebnisse: `results/<env|rcc>[-auth]/scenarioN/` (robot-Logs, Proxy-Logs, ggf. RCC-Profil und `rcc ht vars`)
+und `results/<env|rcc>[-auth]/summary.txt`.
+
+### Windows: `run_scenarios.ps1` (rcc, ohne Docker)
+
+```powershell
+.\run_scenarios.ps1                      # wie oben, Optionen als Schalter
+.\run_scenarios.ps1 -Rcc -Auth
+.\run_scenarios.ps1 -Rcc -Fail 5
+```
+
+- Die Proxies sind `mitmdump`-Prozesse aus einem eigenen rcc-Environment (`mitmproxy/robot.yaml`).
+- Das Addon `mitmproxy/block_loopback.py` weist Ziele auf `127.0.0.1`/`localhost` mit 502 ab. So verhält sich der
+  lokale Proxy wie ein Firmen-Proxy auf einem anderen Host (unter Docker ergibt sich das von selbst, weil
+  `127.0.0.1` im Container der Container ist).
+- Ohne `-Rcc` aktiviert das Skript die Environments über `rcc ht vars --json` *ohne* Profil und setzt nur die
+  Proxy-Variablen selbst.
+- Die Zusammenfassung enthält die Windows-Proxy-Einstellungen (WinINET des Benutzers und WinHTTP), weil Chromium
+  ohne `proxy=` diesen folgt.
+- Ergebnisse unter `results/windows-<env|rcc>[-auth]/`.
+
+## Szenarien
+
+Alle Szenarien mit Browser Library 20.6.0:
+
+| # | Proxy A (Env/RCC) | `NO_PROXY` | `New Browser` | Erwartung |
+|---|---|---|---|---|
+| 1 | ja | `localhost,127.0.0.1` | ohne `proxy` | PASS |
+| 2 | ja | `localhost,127.0.0.1` | Proxy B | PASS |
+| 3 | nein | – | ohne `proxy` | PASS |
+| 4 | nein | – | Proxy B | PASS |
+| 5 (`--fail`) | ja | **fehlt** | ohne `proxy` | PASS (vor 20.4.0: FAIL) |
+
+## Ergebnisse (macOS, kein System-Proxy aktiv)
+
+Alle vier Läufe (`env`, `rcc`, `env-auth`, `rcc-auth`, jeweils mit `--fail`) mit Browser Library 20.6.0:
+20 von 20 Szenarien PASS. `env` und `rcc` liefern identische Zusammenfassungen, ebenso `env-auth` und `rcc-auth`.
+
+| # | Proxy A | `NO_PROXY` | `New Browser` | Env im Test | Python-Request | Browser-Traffic |
+|---|---|---|---|---|---|---|
+| 1 | ja | gesetzt | ohne `proxy` | `HTTP(S)_PROXY=…:3128` | **Proxy A** | **direkt** (weder A noch B) |
+| 2 | ja | gesetzt | Proxy B | `HTTP(S)_PROXY=…:3128` | **Proxy A** | **Proxy B** |
+| 3 | nein | – | ohne `proxy` | nicht gesetzt | direkt | **direkt** |
+| 4 | nein | – | Proxy B | nicht gesetzt | direkt | **Proxy B** |
+| 5 | ja | fehlt | ohne `proxy` | `HTTP(S)_PROXY=…:3128` | **Proxy A** | **direkt**, Test läuft |
+
+Mit `--auth`: identische Wege. Python schickt die Zugangsdaten aus der Proxy-URL gleich mit (0× 407 an Proxy A),
+Chromium bekommt beim ersten Request an Proxy B einmal 407 und authentifiziert sich dann mit `username`/`password`.
+
+Die Logs zeigen z. B. für Szenario 2:
+
+```text
+Proxy A:  http://example.com/?via=python-urllib
+Proxy B:  http://example.com/  http://example.com/s.js  https://example.org/  https://example.org/s.js
+```
+
+## Erkenntnisse
+
+1. **RCC setzt `HTTP_PROXY`/`HTTPS_PROXY`/`NO_PROXY` (groß und klein) in die Umgebung des Robot-Prozesses.**
+   Python (requests, urllib, RequestsLibrary …) nutzt den RCC-Proxy daher automatisch (Kontrollrequest in A).
+   Das RCC-Profil wirkt ausschließlich über diese Variablen: Mit denselben Variablen ohne rcc ist das Verhalten
+   identisch (`results/env` = `results/rcc`).
+2. **Der Browser ignoriert diese Variablen.** Playwright gibt Chromium nur dann `--proxy-server=…` mit,
+   wenn `New Browser` einen `proxy` bekommt. Ohne `proxy` verwendet Chromium die
+   **System-Proxy-Einstellungen des Betriebssystems**, nicht die Env-Variablen.
+3. **`proxy` in `New Browser` hat immer Vorrang**, egal was im RCC-Profil steht (Szenario 2 = Szenario 4).
+   Zugangsdaten gehören dort in `username`/`password`.
+4. Der RCC-Proxy wirkt beim Browser nur indirekt: beim **Bauen des Environments** (conda/pip-Downloads,
+   `rfbrowser init` lädt Node-Pakete und Browser-Binaries über den Proxy).
+5. **`rcc task script` vererbt die Umgebung des aufrufenden Prozesses.** Ohne Profil setzt RCC keine
+   Proxy-Variablen, entfernt aber auch keine bereits vorhandenen. Sind `HTTP(S)_PROXY` in der Shell
+   (bzw. beim Robotmk-Scheduler/Dienst oder systemweit) gesetzt, landen sie im Test, obwohl
+   `rcc ht vars` nichts davon zeigt (es listet nur die von RCC selbst gesetzten Variablen).
+6. **Fehlendes `NO_PROXY` bricht die Browser Library seit 20.4.0 nicht mehr.** Die Library spricht per gRPC
+   mit ihrem eigenen Node-Prozess auf `127.0.0.1:<port>`. grpc-python schickt auch diese lokale Verbindung über
+   `http_proxy`/`https_proxy`, sofern `no_proxy` sie nicht ausnimmt. Vor 20.4.0 endete das mit
+   `Could not connect to the playwright process`
+   ([#1037](https://github.com/MarketSquare/robotframework-browser/issues/1037)). Seit dem Fix in 20.4.0 nimmt die
+   Library lokale gRPC-Kanäle vom Proxy aus; in 20.6.0 setzt `grpc_channel_options` (`Browser/playwright.py`)
+   dafür `grpc.enable_http_proxy=0`. Szenario 5 läuft deshalb durch. `NO_PROXY=localhost,127.0.0.1` bleibt trotzdem sinnvoll, z. B. für
+   Python-Requests an lokale Dienste und für ältere Environments.
+7. **Proxy-Authentifizierung über die URL funktioniert in RCC-Profil und Env-Variablen**
+   (`http://user:pass@host:port`); rcc reicht sie unverändert durch. Für den Browser gilt das nicht, er braucht
+   `username`/`password` im `proxy`-Dictionary.
+
+## Empfehlung für die Browser Library
+
+Soll der Browser über einen Proxy gehen, ihn **immer explizit** setzen und sich nicht auf das RCC-Profil verlassen:
+
+```robotframework
+&{proxy}=    Create Dictionary    server=http://proxy.example:3128    bypass=localhost,127.0.0.1
+...          username=${PROXY_USER}    password=${PROXY_PASS}
+New Browser    chromium    proxy=${proxy}
+```
+
+Browser Library mindestens 20.4.0 verwenden (getestet: 20.6.0) und im RCC-Profil trotzdem `no-proxy` mit
+mindestens `localhost,127.0.0.1` pflegen.
+
+## Einschränkung / Plattformunterschiede
+
+Gemessen auf macOS **ohne** System-Proxy. Ohne `proxy`-Argument folgt Chromium dem System:
+
+- **Windows** (typischer Robotmk-Host): WinINET-Proxyeinstellungen des ausführenden Benutzers.
+  Ist dort ein Proxy (oder PAC/WPAD) konfiguriert, geht der Browser darüber, unabhängig von RCC.
+  Läuft der Scheduler als SYSTEM, gelten dessen Einstellungen. Python-`urllib` liest unter Windows ohne
+  Env-Variablen ebenfalls die Registry-Einstellungen.
+- **Linux** ohne Desktop-Umgebung: Chromium liest `http_proxy`/`https_proxy` aus der Umgebung. Dort *könnte*
+  der RCC-Proxy also auch ohne `proxy`-Argument greifen. Das ist ein weiterer Grund, `proxy` explizit zu setzen.
+
+`run_scenarios.ps1` ist auf Windows noch nicht ausgeführt worden; die macOS-Ergebnisse oben stammen aus
+`run_scenarios.sh`.

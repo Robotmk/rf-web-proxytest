@@ -1,0 +1,13 @@
+name: proxytest-a
+description: RCC-Proxyprofil -> mitmproxy A (localhost:3128), erzeugt von run_scenarios.sh
+settings:
+  certificates:
+    verify-ssl: false
+  network:
+    no-proxy: 'localhost,127.0.0.1'
+    https-proxy: 'http://localhost:3128'
+    http-proxy: 'http://localhost:3128'
+  meta:
+    name: proxytest-a
+    description: RCC-Proxyprofil -> mitmproxy A (localhost:3128), erzeugt von run_scenarios.sh
+    source: Robotmk

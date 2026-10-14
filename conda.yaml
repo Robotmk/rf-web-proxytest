@@ -1,0 +1,14 @@
+channels:
+  - conda-forge
+ 
+dependencies:
+  - python=3.10.12
+  - pip=23.2.1
+  - nodejs>=20
+  - pip:
+      - robotframework>=7.1.1
+      - robotframework-browser==20.6
+ 
+rccPostInstall:
+  - rfbrowser init
+ 

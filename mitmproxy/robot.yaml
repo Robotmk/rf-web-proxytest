@@ -1,0 +1,6 @@
+tasks:
+  mitmdump:
+    shell: mitmdump
+
+condaConfigFile: conda.yaml
+artifactsDir: output
