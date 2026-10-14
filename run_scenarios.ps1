@@ -35,7 +35,8 @@
 .EXAMPLE
     .\run_scenarios.ps1 -Rcc -Fail 5
 #>
-[CmdletBinding()]
+# Ohne PositionalBinding=$false bände PowerShell "5" an -Timeout statt an -Scenario.
+[CmdletBinding(PositionalBinding = $false)]
 param(
     [switch]$Rcc,
     [switch]$Auth,
@@ -132,8 +133,13 @@ function Start-WithEnv {
 }
 
 function Stop-Tree($Process) {
-    # Prozess samt Kindern (cmd -> rcc -> robot -> node -> chromium) beenden
-    if ($Process -and -not $Process.HasExited) { & taskkill.exe /PID $Process.Id /T /F 2>&1 | Out-Null }
+    # Prozess samt Kindern (cmd -> rcc -> robot -> node -> chromium) beenden. taskkill meldet Kinder, die
+    # schon im Beenden sind, auf stderr; in Windows PowerShell 5.1 wäre das mit 'Stop' ein Abbruch.
+    if ($Process -and -not $Process.HasExited) {
+        $old = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
+        try { & taskkill.exe /PID $Process.Id /T /F 2>&1 | Out-Null } finally { $ErrorActionPreference = $old }
+    }
 }
 
 function Wait-Port([int]$Port) {
