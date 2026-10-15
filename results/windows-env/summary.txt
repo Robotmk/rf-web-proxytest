@@ -1,0 +1,15 @@
+﻿Lauf: windows-env | Proxy A: http://localhost:3128 | Proxy B: http://localhost:3129
+WinINET (HKCU): ProxyEnable=0 ProxyServer='' AutoConfigURL='' | WinHTTP: Direct access (no proxy server).
+
+Szenario 3 | Proxy A: - | NO_PROXY: - | Browser 20.6 | browser_noproxy.resource
+  Ergebnis:         PASS, wie erwartet
+  Env im Test:      HTTP_PROXY=<nicht gesetzt> HTTPS_PROXY=<nicht gesetzt> NO_PROXY=<nicht gesetzt>
+  Test -> Proxy A:  
+  Test -> Proxy B:  
+
+Szenario 4 | Proxy A: - | NO_PROXY: - | Browser 20.6 | browser_proxyB.resource
+  Ergebnis:         PASS, wie erwartet
+  Env im Test:      HTTP_PROXY=<nicht gesetzt> HTTPS_PROXY=<nicht gesetzt> NO_PROXY=<nicht gesetzt>
+  Test -> Proxy A:  
+  Test -> Proxy B:  http://example.com/ http://example.com/s.js https://example.org/ https://example.org/s.js
+

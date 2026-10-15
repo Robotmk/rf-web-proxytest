@@ -1,0 +1,14 @@
+==============================================================================
+Proxy :: Welcher Proxy wird vom Browser genutzt? Die Browser-Konfiguration ...
+==============================================================================
+Proxy Environment Variables :: Zeigt, welche Proxy-Variablen rcc i... HTTP_PROXY=http://localhost:3128
+HTTPS_PROXY=http://localhost:3128
+NO_PROXY=localhost,127.0.0.1
+http_proxy=http://localhost:3128
+https_proxy=http://localhost:3128
+no_proxy=localhost,127.0.0.1
+| PASS |
+------------------------------------------------------------------------------
+Python Request (Kontrolle) :: Positivkontrolle: Python (urllib) we... | PASS |
+------------------------------------------------------------------------------
+Open HTTP And HTTPS Page                                              ### Abgebrochen nach 5s (run_scenarios.ps1)

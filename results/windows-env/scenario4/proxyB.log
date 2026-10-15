@@ -1,0 +1,25 @@
+[19:17:24.103] Loading script C:\Users\Administrator\Documents\rf-web-proxytest\mitmproxy\block_loopback.py
+[19:17:24.103] HTTP(S) proxy listening at 127.0.0.1:3129.
+[19:17:24.393][127.0.0.1:50361] client connect
+[19:17:24.393][127.0.0.1:50361] client disconnect
+[19:17:26.708][127.0.0.1:50369] client connect
+[19:17:26.719][127.0.0.1:50369] server connect example.com:80 ([2606:4700:10::6814:179a]:80)
+127.0.0.1:50369: GET http://example.com/
+              << 200 OK 400b
+127.0.0.1:50369: GET http://example.com/s.js
+              << 200 OK 1.3k
+[19:17:26.791][127.0.0.1:50372] client connect
+[19:17:26.796][127.0.0.1:50372] server connect example.org:443 ([2606:4700:10::ac42:9ded]:443)
+[19:17:26.832][127.0.0.1:50372] Client TLS handshake failed. The client does not trust the proxy's certificate for example.org (OpenSSL Error([('SSL routines', '', 'ssl/tls alert certificate unknown')]))
+[19:17:26.833][127.0.0.1:50372] client disconnect
+[19:17:26.834][127.0.0.1:50372] server disconnect example.org:443 ([2606:4700:10::ac42:9ded]:443)
+[19:17:26.835][127.0.0.1:50375] client connect
+[19:17:26.838][127.0.0.1:50375] server connect example.org:443 ([2606:4700:10::ac42:9ded]:443)
+127.0.0.1:50375: GET https://example.org/ HTTP/2.0
+     << HTTP/2.0 200 OK 334b
+127.0.0.1:50375: GET https://example.org/s.js HTTP/2.0
+     << HTTP/2.0 200 OK 1.3k
+[19:17:27.017][127.0.0.1:50375] client disconnect
+[19:17:27.017][127.0.0.1:50369] client disconnect
+[19:17:27.018][127.0.0.1:50375] server disconnect example.org:443 ([2606:4700:10::ac42:9ded]:443)
+[19:17:27.019][127.0.0.1:50369] server disconnect example.com:80 ([2606:4700:10::6814:179a]:80)

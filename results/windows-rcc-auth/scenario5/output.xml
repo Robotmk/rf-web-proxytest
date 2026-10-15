@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.5 (Python 3.10.12 on win32)" generated="2026-10-14T19:15:41.566827" rpa="false" schemaversion="5">
+<suite id="s1" name="Proxy" source="C:\Users\Administrator\Documents\rf-web-proxytest\proxy.robot">
+<test id="s1-t1" name="Proxy Environment Variables" line="15">
+<for flavor="IN">
+<iter>
+<kw name="Get Environment Variable" owner="OperatingSystem">
+<msg time="2026-10-14T19:15:42.198139" level="INFO">${value} = http://proxyuser:s3cr3t@localhost:3128</msg>
+<var>${value}</var>
+<arg>${name}</arg>
+<arg>&lt;nicht gesetzt&gt;</arg>
+<doc>Returns the value of an environment variable with the given name.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.197513" elapsed="0.000626"/>
+</kw>
+<kw name="Log To Console" owner="BuiltIn">
+<arg>${name}=${value}</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.198139" elapsed="0.000000"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-10-14T19:15:42.199723" level="INFO">HTTP_PROXY=http://proxyuser:s3cr3t@localhost:3128</msg>
+<arg>${name}=${value}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.199191" elapsed="0.000532"/>
+</kw>
+<var name="${name}">HTTP_PROXY</var>
+<status status="PASS" start="2026-10-14T19:15:42.196350" elapsed="0.003373"/>
+</iter>
+<iter>
+<kw name="Get Environment Variable" owner="OperatingSystem">
+<msg time="2026-10-14T19:15:42.200357" level="INFO">${value} = http://proxyuser:s3cr3t@localhost:3128</msg>
+<var>${value}</var>
+<arg>${name}</arg>
+<arg>&lt;nicht gesetzt&gt;</arg>
+<doc>Returns the value of an environment variable with the given name.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.199723" elapsed="0.000634"/>
+</kw>
+<kw name="Log To Console" owner="BuiltIn">
+<arg>${name}=${value}</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.200357" elapsed="0.000535"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-10-14T19:15:42.202061" level="INFO">HTTPS_PROXY=http://proxyuser:s3cr3t@localhost:3128</msg>
+<arg>${name}=${value}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.201531" elapsed="0.000530"/>
+</kw>
+<var name="${name}">HTTPS_PROXY</var>
+<status status="PASS" start="2026-10-14T19:15:42.199723" elapsed="0.002338"/>
+</iter>
+<iter>
+<kw name="Get Environment Variable" owner="OperatingSystem">
+<msg time="2026-10-14T19:15:42.202688" level="INFO">${value} = &lt;nicht gesetzt&gt;</msg>
+<var>${value}</var>
+<arg>${name}</arg>
+<arg>&lt;nicht gesetzt&gt;</arg>
+<doc>Returns the value of an environment variable with the given name.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.202061" elapsed="0.000627"/>
+</kw>
+<kw name="Log To Console" owner="BuiltIn">
+<arg>${name}=${value}</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.202688" elapsed="0.000534"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-10-14T19:15:42.204289" level="INFO">NO_PROXY=&lt;nicht gesetzt&gt;</msg>
+<arg>${name}=${value}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.203753" elapsed="0.000536"/>
+</kw>
+<var name="${name}">NO_PROXY</var>
+<status status="PASS" start="2026-10-14T19:15:42.202061" elapsed="0.002228"/>
+</iter>
+<iter>
+<kw name="Get Environment Variable" owner="OperatingSystem">
+<msg time="2026-10-14T19:15:42.204824" level="INFO">${value} = http://proxyuser:s3cr3t@localhost:3128</msg>
+<var>${value}</var>
+<arg>${name}</arg>
+<arg>&lt;nicht gesetzt&gt;</arg>
+<doc>Returns the value of an environment variable with the given name.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.204824" elapsed="0.000000"/>
+</kw>
+<kw name="Log To Console" owner="BuiltIn">
+<arg>${name}=${value}</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.205358" elapsed="0.000632"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-10-14T19:15:42.206522" level="INFO">http_proxy=http://proxyuser:s3cr3t@localhost:3128</msg>
+<arg>${name}=${value}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.205990" elapsed="0.000532"/>
+</kw>
+<var name="${name}">http_proxy</var>
+<status status="PASS" start="2026-10-14T19:15:42.204289" elapsed="0.002233"/>
+</iter>
+<iter>
+<kw name="Get Environment Variable" owner="OperatingSystem">
+<msg time="2026-10-14T19:15:42.207167" level="INFO">${value} = http://proxyuser:s3cr3t@localhost:3128</msg>
+<var>${value}</var>
+<arg>${name}</arg>
+<arg>&lt;nicht gesetzt&gt;</arg>
+<doc>Returns the value of an environment variable with the given name.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.207167" elapsed="0.000000"/>
+</kw>
+<kw name="Log To Console" owner="BuiltIn">
+<arg>${name}=${value}</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.207699" elapsed="0.000514"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-10-14T19:15:42.208886" level="INFO">https_proxy=http://proxyuser:s3cr3t@localhost:3128</msg>
+<arg>${name}=${value}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.208350" elapsed="0.000536"/>
+</kw>
+<var name="${name}">https_proxy</var>
+<status status="PASS" start="2026-10-14T19:15:42.206522" elapsed="0.002364"/>
+</iter>
+<iter>
+<kw name="Get Environment Variable" owner="OperatingSystem">
+<msg time="2026-10-14T19:15:42.209514" level="INFO">${value} = &lt;nicht gesetzt&gt;</msg>
+<var>${value}</var>
+<arg>${name}</arg>
+<arg>&lt;nicht gesetzt&gt;</arg>
+<doc>Returns the value of an environment variable with the given name.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.209399" elapsed="0.000115"/>
+</kw>
+<kw name="Log To Console" owner="BuiltIn">
+<arg>${name}=${value}</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.209514" elapsed="0.000534"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-10-14T19:15:42.211206" level="INFO">no_proxy=&lt;nicht gesetzt&gt;</msg>
+<arg>${name}=${value}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.210675" elapsed="0.000531"/>
+</kw>
+<var name="${name}">no_proxy</var>
+<status status="PASS" start="2026-10-14T19:15:42.208886" elapsed="0.002320"/>
+</iter>
+<var>${name}</var>
+<value>HTTP_PROXY</value>
+<value>HTTPS_PROXY</value>
+<value>NO_PROXY</value>
+<value>http_proxy</value>
+<value>https_proxy</value>
+<value>no_proxy</value>
+<status status="PASS" start="2026-10-14T19:15:42.195819" elapsed="0.015387"/>
+</for>
+<msg time="2026-10-14T19:15:42.232960" level="INFO">Starting Browser process C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\lib\site-packages\Browser\wrapper\index.js using at 127.0.0.1:50218</msg>
+<doc>Zeigt, welche Proxy-Variablen rcc in die Umgebung des Tests setzt.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.195178" elapsed="0.016028"/>
+</test>
+<test id="s1-t2" name="Python Request (Kontrolle)" line="23">
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2026-10-14T19:15:44.912911" level="INFO">${status} = 200</msg>
+<var>${status}</var>
+<arg>urllib.request.urlopen("http://example.com/?via=python-urllib").status</arg>
+<arg>modules=urllib.request</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.838836" elapsed="2.074075"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-10-14T19:15:44.912911" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${status}</arg>
+<arg>200</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-10-14T19:15:44.912911" elapsed="0.000000"/>
+</kw>
+<doc>Positivkontrolle: Python (urllib) wertet HTTP(S)_PROXY aus.
+Taucht dieser Request in Proxy A auf, ist das RCC-Proxyprofil im Prozess wirksam.</doc>
+<status status="PASS" start="2026-10-14T19:15:42.834493" elapsed="2.078418"/>
+</test>
+<test id="s1-t3" name="Open HTTP And HTTPS Page" line="29">
+<kw name="Open Scenario Browser" owner="browser_noproxy">
+<kw name="New Browser" owner="Browser">
+<msg time="2026-10-14T19:15:44.955281" level="INFO">{"browser": "chromium", "headless": true, "chromiumSandbox": false, "devtools": false, "handleSIGHUP": true, "handleSIGINT": true, "handleSIGTERM": true, "slowMo": 0.0, "timeout": 30000.0, "tracesDir": "C:\\Users\\Administrator\\Documents\\rf-web-proxytest\\results\\windows-rcc-auth\\scenario5\\browser\\traces\\temp\\afdb3f52-cbd5-4d07-950d-5b5a17cd83de"}</msg>
+<msg time="2026-10-14T19:15:45.024456" level="INFO">Successfully created browser with options: {"browser":"chromium","headless":true,"chromiumSandbox":false,"devtools":false,"handleSIGHUP":true,"handleSIGINT":true,"handleSIGTERM":true,"slowMo":0,"timeout":30000,"tracesDir":"C:\\Users\\Administrator\\Documents\\rf-web-proxytest\\results\\windows-rcc-auth\\scenario5\\browser\\traces\\temp\\afdb3f52-cbd5-4d07-950d-5b5a17cd83de"}</msg>
+<arg>chromium</arg>
+<arg>headless=True</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new playwright Browser with specified options.</doc>
+<status status="PASS" start="2026-10-14T19:15:44.951266" elapsed="0.073190"/>
+</kw>
+<kw name="New Context" owner="Browser">
+<msg time="2026-10-14T19:15:45.024456" level="INFO">{
+  "acceptDownloads": true,
+  "bypassCSP": false,
+  "forcedColors": "none",
+  "ignoreHTTPSErrors": true,
+  "javaScriptEnabled": true,
+  "offline": false,
+  "reducedMotion": "no-preference",
+  "serviceWorkers": "allow",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  }
+}</msg>
+<msg time="2026-10-14T19:15:45.040102" level="INFO">Successfully created context. </msg>
+<msg time="2026-10-14T19:15:45.040102" level="INFO">{'acceptDownloads': True, 'bypassCSP': False, 'forcedColors': 'none', 'ignoreHTTPSErrors': True, 'javaScriptEnabled': True, 'offline': False, 'reducedMotion': 'no-preference', 'serviceWorkers': 'allow', 'viewport': {'width': 1280, 'height': 720}}</msg>
+<arg>ignoreHTTPSErrors=True</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new BrowserContext with specified options.</doc>
+<status status="PASS" start="2026-10-14T19:15:45.024456" elapsed="0.015646"/>
+</kw>
+<status status="PASS" start="2026-10-14T19:15:44.951266" elapsed="0.088836"/>
+</kw>
+<kw name="New Page" owner="Browser">
+<msg time="2026-10-14T19:15:45.188256" level="INFO">Successfully initialized new page object and opened url: http://example.com</msg>
+<arg>http://example.com</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Open a new Page.</doc>
+<status status="PASS" start="2026-10-14T19:15:45.040102" elapsed="0.148154"/>
+</kw>
+<kw name="Get Title" owner="Browser">
+<msg time="2026-10-14T19:15:45.195258" level="INFO">Title: 'Example Domain'</msg>
+<arg>==</arg>
+<arg>Example Domain</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the title of the current page.</doc>
+<status status="PASS" start="2026-10-14T19:15:45.188256" elapsed="0.007002"/>
+</kw>
+<kw name="Go To" owner="Browser">
+<msg time="2026-10-14T19:15:45.259846" level="INFO">Successfully opened URL https://example.org</msg>
+<arg>https://example.org</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Navigates to the given ``url``.</doc>
+<status status="PASS" start="2026-10-14T19:15:45.195258" elapsed="0.064588"/>
+</kw>
+<kw name="Get Title" owner="Browser">
+<msg time="2026-10-14T19:15:45.280940" level="INFO">Title: 'Example Domain'</msg>
+<arg>==</arg>
+<arg>Example Domain</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the title of the current page.</doc>
+<status status="PASS" start="2026-10-14T19:15:45.260856" elapsed="0.020084"/>
+</kw>
+<msg time="2026-10-14T19:15:45.291386" level="INFO">Switching context to context=bf6a6f09-8da6-4353-b57c-0adbc74520e2 in CURRENT</msg>
+<msg time="2026-10-14T19:15:45.295596" level="INFO">Successfully changed active context: context=bf6a6f09-8da6-4353-b57c-0adbc74520e2</msg>
+<msg time="2026-10-14T19:15:45.301763" level="INFO">Successfully closed Context</msg>
+<status status="PASS" start="2026-10-14T19:15:44.931975" elapsed="0.348965"/>
+</test>
+<kw name="Close Browser" owner="Browser" type="TEARDOWN">
+<msg time="2026-10-14T19:15:45.333331" level="INFO">Closed all browsers</msg>
+<arg>ALL</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Closes the current browser.</doc>
+<status status="PASS" start="2026-10-14T19:15:45.303744" elapsed="0.029587"/>
+</kw>
+<doc>Welcher Proxy wird vom Browser genutzt?
+Die Browser-Konfiguration kommt aus resources/browser_noproxy.resource (per -v gesetzt).</doc>
+<status status="PASS" start="2026-10-14T19:15:41.566827" elapsed="3.766504"/>
+</suite>
+<statistics>
+<total>
+<stat pass="3" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat name="Proxy" id="s1" pass="3" fail="0" skip="0">Proxy</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>
