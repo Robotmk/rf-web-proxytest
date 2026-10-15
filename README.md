@@ -25,48 +25,61 @@ mitmdump bricht TLS auf, damit auch HTTPS-Requests im Log erscheinen. Im Browser
 
 ## Ausführen
 
+Beide Skripte setzen rcc voraus: rcc baut und aktiviert das Environment (Browser Library 20.6.0), und robot
+läuft immer über `rcc task script`. Die Modi unterscheiden sich nur darin, **woher die Proxy-Variablen für
+Proxy A kommen**:
+
+| Modus | Proxy A kommt aus | Zweck |
+|---|---|---|
+| `profile` (Default) | RCC-Proxyprofil (`rcc config import`/`switch`) | der Robotmk-Weg |
+| `env` | `HTTP(S)_PROXY`/`NO_PROXY` in der Umgebung des Aufrufers, kein RCC-Profil; `rcc task script` vererbt sie | Gegenprobe: Wirkt das Profil nur über diese Variablen? |
+
 ### macOS/Linux: `run_scenarios.sh` (Docker + rcc)
 
 ```bash
-./run_scenarios.sh                  # Szenarien 1-4, Proxy-Variablen direkt gesetzt (ohne rcc)
-./run_scenarios.sh --rcc            # Szenarien 1-4 mit RCC-Proxyprofil und "rcc task script"
-./run_scenarios.sh --auth           # Proxies mit Benutzer/Passwort
-./run_scenarios.sh --fail           # zusätzlich Szenario 5 (NO_PROXY fehlt)
-./run_scenarios.sh --rcc --auth --fail 5     # kombinierbar, Nummern wählen einzelne Szenarien
+./run_scenarios.sh                          # Szenarien 1-4, Proxy A per RCC-Profil
+./run_scenarios.sh --proxy-from env         # Proxy A per Variablen des Aufrufers, ohne Profil
+./run_scenarios.sh --auth                   # Proxies mit Benutzer/Passwort
+./run_scenarios.sh --fail                   # zusätzlich Szenario 5 (NO_PROXY fehlt)
+./run_scenarios.sh --proxy-from env --auth --fail 5   # kombinierbar, Nummern wählen einzelne Szenarien
 ```
 
-- **Ohne `--rcc`:** Das Skript setzt `HTTP_PROXY`, `HTTPS_PROXY`, `http_proxy`, `https_proxy` und ggf. `NO_PROXY`/`no_proxy`
-  selbst, also genau die Variablen, die rcc mit dem entsprechenden Profil setzt. `robot` läuft direkt aus dem
-  Holotree-Environment, das zur `conda.yaml` passt (die Environments müssen einmal von rcc gebaut worden sein).
-- **Mit `--rcc`:** Das Skript erzeugt das passende Profil unter `profiles/`, importiert und aktiviert es
-  (`rcc config import`, `rcc config switch`) und startet `rcc task script -- robot …`. Am Ende wird das vorher
-  aktive Profil wiederhergestellt.
-- **Mit `--auth`:** Beide Proxies verlangen `proxyuser:s3cr3t`. Proxy A bekommt die Zugangsdaten über die URL
-  (`http://proxyuser:s3cr3t@localhost:3128`, in den Env-Variablen bzw. im RCC-Profil), der Browser für Proxy B
+- **`profile`:** Das Skript erzeugt das passende Profil unter `profiles/`, importiert und aktiviert es. Am Ende
+  wird das vorher aktive Profil wiederhergestellt.
+- **`env`:** Kein Profil aktiv (`rcc config switch -n`). Das Skript setzt `HTTP_PROXY`, `HTTPS_PROXY`, `http_proxy`,
+  `https_proxy` und ggf. `NO_PROXY`/`no_proxy` (dieselben Variablen, die rcc mit dem Profil setzt) für den
+  rcc-Prozess.
+- **`--auth`:** Beide Proxies verlangen `proxyuser:s3cr3t`. Proxy A bekommt die Zugangsdaten über die URL
+  (`http://proxyuser:s3cr3t@localhost:3128`, im RCC-Profil bzw. in den Variablen), der Browser für Proxy B
   über `username`/`password` im `proxy`-Dictionary.
+- Vor dem ersten Szenario baut bzw. prüft das Skript das Environment (`rcc ht vars` ohne Profil).
 - Die Proxy-Variablen der aufrufenden Shell werden vorher entfernt (siehe Erkenntnis 5).
 - Jeder robot-Lauf wird nach `TIMEOUT` Sekunden (Default 120) samt Kindprozessen beendet.
 
-Ergebnisse: `results/<env|rcc>[-auth]/scenarioN/` (robot-Logs, Proxy-Logs, ggf. RCC-Profil und `rcc ht vars`)
-und `results/<env|rcc>[-auth]/summary.txt`.
+Ergebnisse: `results/<profile|env>[-auth]/scenarioN/` und `results/<profile|env>[-auth]/summary.txt`. Pro Szenario:
+robot-Logs, Proxy-Logs, `caller_env.txt` (vom Skript gesetzte Variablen), `rcc_profile.txt` und `htvars.txt`
+(`rcc ht vars` mit derselben Umgebung wie der Test).
 
 ### Windows: `run_scenarios.ps1` (rcc, ohne Docker)
 
 ```powershell
-.\run_scenarios.ps1                      # wie oben, Optionen als Schalter
-.\run_scenarios.ps1 -Rcc -Auth
-.\run_scenarios.ps1 -Rcc -Fail 5
+.\run_scenarios.ps1                            # Szenarien 1-4, Proxy A per RCC-Profil
+.\run_scenarios.ps1 -ProxyFrom env -Auth
+.\run_scenarios.ps1 -Fail 5
+.\run_scenarios.ps1 -SystemProxy -Fail         # WinINET-Proxy des Benutzers zeigt auf Proxy A
 ```
 
+- Optionen wie oben: `-ProxyFrom profile|env`, `-Auth`, `-Fail`, Szenarionummern, `-Timeout`.
 - Die Proxies sind `mitmdump`-Prozesse aus einem eigenen rcc-Environment (`mitmproxy/robot.yaml`).
 - Das Addon `mitmproxy/block_loopback.py` weist Ziele auf `127.0.0.1`/`localhost` mit 502 ab. So verhält sich der
   lokale Proxy wie ein Firmen-Proxy auf einem anderen Host (unter Docker ergibt sich das von selbst, weil
   `127.0.0.1` im Container der Container ist).
-- Ohne `-Rcc` aktiviert das Skript die Environments über `rcc ht vars --json` *ohne* Profil und setzt nur die
-  Proxy-Variablen selbst.
-- Die Zusammenfassung enthält die Windows-Proxy-Einstellungen (WinINET des Benutzers und WinHTTP), weil Chromium
-  ohne `proxy=` diesen folgt.
-- Ergebnisse unter `results/windows-<env|rcc>[-auth]/`.
+- **`-SystemProxy`:** setzt für die Dauer des Laufs den WinINET-Proxy des Benutzers (HKCU, Internetoptionen)
+  auf `localhost:3128` mit Ausnahme `<local>` und stellt danach den vorherigen Zustand wieder her. Damit lässt
+  sich messen, welchem Proxy Chromium ohne `proxy=` folgt. Nicht mit `-Auth` kombinierbar. Während des Laufs
+  geht auch anderer WinINET-Traffic des Benutzers über Proxy A.
+- Die Zusammenfassung enthält die Windows-Proxy-Einstellungen (WinINET des Benutzers und WinHTTP).
+- Ergebnisse unter `results/windows-<profile|env>[-auth][-sysproxy]/`.
 
 ## Szenarien
 
@@ -80,7 +93,7 @@ Alle Szenarien mit Browser Library 20.6.0:
 | 4 | nein | – | Proxy B | PASS |
 | 5 (`--fail`) | ja | **fehlt** | ohne `proxy` | PASS (vor 20.4.0: FAIL) |
 
-## Ergebnisse (macOS, kein System-Proxy aktiv)
+## Ergebnisse macOS (kein System-Proxy aktiv)
 
 Alle vier Läufe (`env`, `rcc`, `env-auth`, `rcc-auth`, jeweils mit `--fail`) mit Browser Library 20.6.0:
 20 von 20 Szenarien PASS. `env` und `rcc` liefern identische Zusammenfassungen, ebenso `env-auth` und `rcc-auth`.
@@ -103,12 +116,32 @@ Proxy A:  http://example.com/?via=python-urllib
 Proxy B:  http://example.com/  http://example.com/s.js  https://example.org/  https://example.org/s.js
 ```
 
+## Ergebnisse Windows (Windows Server 2022, rcc v17.29.1, kein System-Proxy aktiv)
+
+`run_scenarios.ps1` als Administrator. Laut Zusammenfassung: WinINET (HKCU) `ProxyEnable=0`, kein `ProxyServer`,
+keine `AutoConfigURL`; WinHTTP `Direct access`. Ergebnisse unter `results/windows-*`.
+
+| Lauf | Szenarien | Ergebnis |
+|---|---|---|
+| `windows-rcc-auth` (`-Rcc -Auth -Fail`) | 1–5 | 5 von 5 PASS |
+| `windows-env` (`-Fail`) | 2–5 | PASS |
+| `windows-env` | 1 | kein gültiges Ergebnis (siehe unten) |
+
+Die Wege sind dieselben wie unter macOS: Der Python-Request geht über Proxy A, der Browser ohne `proxy=` direkt
+und mit `proxy=` über Proxy B. Szenario 5 läuft ohne `NO_PROXY` durch. Auch die Authentifizierung verhält sich
+gleich: 0× 407 an Proxy A, 1× 407 an Proxy B, danach meldet sich Chromium mit `username`/`password` an.
+
+Szenario 1 im Lauf `windows-env` wurde nach 5 s abgebrochen. Damals band PowerShell bei `-Fail 5` die `5` an
+`-Timeout`; das ist inzwischen behoben (`PositionalBinding = $false`). Bis zu diesem Abbruch ging der Python-Request
+über Proxy A. Den Weg des Browsers in Szenario 1 belegt der Lauf `windows-rcc-auth`. Ein vollständiger
+`windows-env`-Lauf und die Läufe `windows-rcc` und `windows-env-auth` stehen noch aus.
+
 ## Erkenntnisse
 
 1. **RCC setzt `HTTP_PROXY`/`HTTPS_PROXY`/`NO_PROXY` (groß und klein) in die Umgebung des Robot-Prozesses.**
    Python (requests, urllib, RequestsLibrary …) nutzt den RCC-Proxy daher automatisch (Kontrollrequest in A).
    Das RCC-Profil wirkt ausschließlich über diese Variablen: Mit denselben Variablen ohne rcc ist das Verhalten
-   identisch (`results/env` = `results/rcc`).
+   identisch (`results/env` = `results/profile`).
 2. **Der Browser ignoriert diese Variablen.** Playwright gibt Chromium nur dann `--proxy-server=…` mit,
    wenn `New Browser` einen `proxy` bekommt. Ohne `proxy` verwendet Chromium die
    **System-Proxy-Einstellungen des Betriebssystems**, nicht die Env-Variablen.
@@ -147,7 +180,7 @@ mindestens `localhost,127.0.0.1` pflegen.
 
 ## Einschränkung / Plattformunterschiede
 
-Gemessen auf macOS **ohne** System-Proxy. Ohne `proxy`-Argument folgt Chromium dem System:
+Ohne `proxy`-Argument folgt Chromium dem System:
 
 - **Windows** (typischer Robotmk-Host): WinINET-Proxyeinstellungen des ausführenden Benutzers.
   Ist dort ein Proxy (oder PAC/WPAD) konfiguriert, geht der Browser darüber, unabhängig von RCC.
@@ -156,5 +189,6 @@ Gemessen auf macOS **ohne** System-Proxy. Ohne `proxy`-Argument folgt Chromium d
 - **Linux** ohne Desktop-Umgebung: Chromium liest `http_proxy`/`https_proxy` aus der Umgebung. Dort *könnte*
   der RCC-Proxy also auch ohne `proxy`-Argument greifen. Das ist ein weiterer Grund, `proxy` explizit zu setzen.
 
-`run_scenarios.ps1` ist auf Windows noch nicht ausgeführt worden; die macOS-Ergebnisse oben stammen aus
-`run_scenarios.sh`.
+Unter macOS und Windows wurde jeweils **ohne** System-Proxy gemessen; dort geht der Browser ohne `proxy=` direkt.
+Noch nicht gemessen: ein Windows-Host mit gesetztem WinINET-Proxy oder PAC-Datei und ein Scheduler, der als SYSTEM
+läuft.

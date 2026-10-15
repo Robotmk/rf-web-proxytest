@@ -1,5 +1,5 @@
 name: proxytest-a-auth
-description: RCC-Proxyprofil -> mitmproxy A (localhost:3128), erzeugt von run_scenarios.ps1
+description: RCC-Proxyprofil -> mitmproxy A (localhost:3128)
 settings:
   certificates:
     verify-ssl: false
@@ -9,5 +9,5 @@ settings:
     http-proxy: 'http://proxyuser:s3cr3t@localhost:3128'
   meta:
     name: proxytest-a-auth
-    description: RCC-Proxyprofil -> mitmproxy A (localhost:3128), erzeugt von run_scenarios.ps1
+    description: RCC-Proxyprofil -> mitmproxy A (localhost:3128)
     source: Robotmk

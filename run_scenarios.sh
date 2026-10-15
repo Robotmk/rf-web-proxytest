@@ -4,30 +4,37 @@
 #   Proxy A = localhost:3128 (per RCC-Profil bzw. Proxy-Env-Variablen)
 #   Proxy B = localhost:3129 (nur explizit in der Browser Library gesetzt)
 #
-# Aufruf: ./run_scenarios.sh [--rcc] [--auth] [--fail] [Nr ...]
+# Aufruf: ./run_scenarios.sh [--proxy-from profile|env] [--auth] [--fail] [Nr ...]
 #
-#   (ohne)   Proxy-Variablen direkt setzen, robot aus dem Holotree-Environment starten (kein rcc)
-#   --rcc    rcc als Unterbau: RCC-Profil erzeugen/aktivieren, robot via "rcc task script"
+# rcc baut und aktiviert immer das Environment, robot läuft immer über "rcc task script".
+# Unterschied der Modi ist nur, woher die Proxy-Variablen für Proxy A kommen:
+#
+#   --proxy-from profile  (Default) RCC-Proxyprofil erzeugen und aktivieren
+#   --proxy-from env      kein RCC-Profil; das Skript setzt HTTP(S)_PROXY/NO_PROXY selbst und
+#                         "rcc task script" vererbt sie an robot (Gegenprobe zum Profil)
 #   --auth   Proxies verlangen Benutzer/Passwort (Env-Variablen/RCC-Profil bzw. New Browser proxy=)
 #   --fail   zusätzlich Szenario 5: NO_PROXY fehlt (vor Browser Library 20.4.0 scheiterte daran die
 #            interne gRPC-Verbindung; hier wird nur 20.6.0 getestet)
 #   Nr ...   nur diese Szenarien, z. B. "./run_scenarios.sh --fail 5"
 #
-# Ergebnisse: results/<env|rcc>[-auth]/scenarioN/ und .../summary.txt
+# Ergebnisse: results/<profile|env>[-auth]/scenarioN/ und .../summary.txt
 set -uo pipefail
 cd "$(dirname "$0")"
 
-MODE=env; AUTH=0; FAIL=0; SELECTED=()
-for arg in "$@"; do
-  case $arg in
-    --rcc) MODE=rcc ;;
+MODE=profile; AUTH=0; FAIL=0; SELECTED=()
+while (($#)); do
+  case $1 in
+    --proxy-from) MODE=${2:-}; shift ;;
+    --proxy-from=*) MODE=${1#*=} ;;
     --auth) AUTH=1 ;;
     --fail) FAIL=1 ;;
-    -h|--help) sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
-    [0-9]*) SELECTED+=("$arg") ;;
-    *) echo "Unbekannte Option: $arg" >&2; exit 2 ;;
+    -h|--help) sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    [0-9]*) SELECTED+=("$1") ;;
+    *) echo "Unbekannte Option: $1" >&2; exit 2 ;;
   esac
+  shift
 done
+[[ $MODE == profile || $MODE == env ]] || { echo "--proxy-from erwartet profile oder env" >&2; exit 2; }
 
 # Nur die Variablen dieses Skripts bzw. des RCC-Profils sollen wirken, nicht die der aufrufenden Shell
 # (rcc task script vererbt die Umgebung des aufrufenden Prozesses).
@@ -113,20 +120,6 @@ run_limited() {  # logfile cmd... -> rc des Kommandos, 124 bei Timeout
   wait "$pid"
 }
 
-trim() { sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//; /^(#|$)/d'; }
-
-env_bin() {  # bin-Verzeichnis des Holotree-Environments, das zu conda.yaml passt
-  local d
-  for d in ~/.robocorp/holotree/*/; do
-    [[ -x $d/bin/robot && -f $d/identity.yaml ]] || continue
-    # identity.yaml ist die von rcc normalisierte conda.yaml: alle Zeilen müssen enthalten sein
-    if ! grep -vxF -f <(trim <"$d/identity.yaml") <(trim <conda.yaml) >/dev/null; then
-      echo "${d%/}/bin"; return
-    fi
-  done
-  return 1
-}
-
 rcc_profile_for() {  # noproxy(ja|nein) -> Profilname; schreibt profiles/<name>.yaml und importiert es
   local name=proxytest-a
   ((AUTH)) && name+=-auth
@@ -134,7 +127,7 @@ rcc_profile_for() {  # noproxy(ja|nein) -> Profilname; schreibt profiles/<name>.
   local file=profiles/$name.yaml
   {
     echo "name: $name"
-    echo "description: RCC-Proxyprofil -> mitmproxy A (localhost:3128), erzeugt von run_scenarios.sh"
+    echo "description: RCC-Proxyprofil -> mitmproxy A (localhost:3128)"
     echo "settings:"
     echo "  certificates:"
     echo "    verify-ssl: false"
@@ -144,43 +137,39 @@ rcc_profile_for() {  # noproxy(ja|nein) -> Profilname; schreibt profiles/<name>.
     echo "    http-proxy: '$PROXY_A'"
     echo "  meta:"
     echo "    name: $name"
-    echo "    description: RCC-Proxyprofil -> mitmproxy A (localhost:3128), erzeugt von run_scenarios.sh"
+    echo "    description: RCC-Proxyprofil -> mitmproxy A (localhost:3128)"
     echo "    source: Robotmk"
   } >"$file"
-  rcc config import -f "$file" >/dev/null
+  rcc config import -f "$file" >/dev/null 2>&1
   echo "$name"
 }
 
 # --- Vorbereitung ----------------------------------------------------------------------------
 
 BROWSER_VERSION=$(grep -oE 'robotframework-browser==[0-9.]+' conda.yaml | cut -d= -f3)
-if [[ $MODE == env ]] && ! ENV_BIN=$(env_bin); then
-  echo "Kein Holotree-Environment für conda.yaml gefunden. Einmalig bauen mit:" >&2
-  echo "  rcc ht vars -r $ROBOT_YAML --space $SPACE" >&2
-  exit 1
-fi
 
 mkdir -p "$RESULTS" profiles
 SUMMARY=$RESULTS/summary.txt
 : >"$SUMMARY"
 
-if [[ $MODE == rcc ]]; then
-  ORIG_PROFILE=$(rcc config switch 2>/dev/null | sed -n 's/^Currently active profile is: //p')
-fi
+ORIG_PROFILE=$(rcc config switch 2>/dev/null | sed -n 's/^Currently active profile is: //p')
 
 cleanup() {
   docker rm -f proxyA proxyB >/dev/null 2>&1
-  if [[ $MODE == rcc ]]; then
-    if [[ -n ${ORIG_PROFILE:-} && $ORIG_PROFILE != default ]]; then
-      rcc config switch -p "$ORIG_PROFILE" >/dev/null
-    else
-      rcc config switch -n >/dev/null
-    fi
-    echo "RCC-Profil zurückgesetzt auf: ${ORIG_PROFILE:-<keins>}"
+  if [[ -n ${ORIG_PROFILE:-} && $ORIG_PROFILE != default ]]; then
+    rcc config switch -p "$ORIG_PROFILE" >/dev/null 2>&1
+  else
+    rcc config switch -n >/dev/null 2>&1
   fi
+  echo "RCC-Profil zurückgesetzt auf: ${ORIG_PROFILE:-<keins>}"
 }
 trap cleanup EXIT
 trap 'exit 130' INT TERM
+
+# Environment ohne Profil bauen bzw. prüfen, damit der erste Testlauf nicht in den Timeout läuft
+echo "Environment vorbereiten (rcc ht vars, beim ersten Mal dauert das) ..."
+rcc config switch -n >/dev/null 2>&1
+rcc ht vars -r "$ROBOT_YAML" --space "$SPACE" >/dev/null 2>&1 || { echo "rcc ht vars fehlgeschlagen" >&2; exit 1; }
 
 {
   echo "Lauf: $RUN | Proxy A: $PROXY_A | Proxy B: http://localhost:3129$( ((AUTH)) && echo " (Auth $PROXY_USER:$PROXY_PASS)")"
@@ -202,30 +191,27 @@ for entry in "${SCENARIOS[@]}"; do
 
   restart_proxies
 
-  if [[ $MODE == rcc ]]; then
-    if [[ $proxy == A ]]; then
-      profile=$(rcc_profile_for "$noproxy")
-      rcc config switch -p "$profile" >/dev/null
-    else
-      rcc config switch -n >/dev/null
-    fi
-    rcc config switch >"$dir/rcc_profile.txt" 2>&1
-    rcc ht vars -r "$ROBOT_YAML" --space "$SPACE" >"$dir/htvars.txt" 2>&1
-    run_limited "$dir/robot_console.txt" \
-      rcc task script -r "$ROBOT_YAML" --space "$SPACE" --silent -- robot "${robot_args[@]}"
-    rc=$?
+  # profile: Proxy A kommt aus dem RCC-Profil. env: kein Profil, dieselben Variablen, die rcc mit dem
+  # Profil setzen würde, stehen in der Umgebung des rcc-Prozesses und werden an robot vererbt.
+  proxy_env=()
+  if [[ $MODE == profile && $proxy == A ]]; then
+    profile=$(rcc_profile_for "$noproxy")
+    rcc config switch -p "$profile" >/dev/null 2>&1
   else
-    # Dieselben Variablen, die rcc mit dem entsprechenden Profil setzen würde
-    proxy_env=()
+    rcc config switch -n >/dev/null 2>&1
     if [[ $proxy == A ]]; then
       proxy_env=(HTTP_PROXY=$PROXY_A HTTPS_PROXY=$PROXY_A http_proxy=$PROXY_A https_proxy=$PROXY_A)
       [[ $noproxy == ja ]] && proxy_env+=(NO_PROXY=$NO_PROXY_LIST no_proxy=$NO_PROXY_LIST)
     fi
-    printf '%s\n' "environment: $ENV_BIN" ${proxy_env[@]+"${proxy_env[@]}"} >"$dir/proxy_env.txt"
-    run_limited "$dir/robot_console.txt" \
-      env ${proxy_env[@]+"${proxy_env[@]}"} PATH="$ENV_BIN:$PATH" PYTHONPATH=. "$ENV_BIN/robot" "${robot_args[@]}"
-    rc=$?
   fi
+  printf '%s\n' ${proxy_env[@]+"${proxy_env[@]}"} >"$dir/caller_env.txt"
+  rcc config switch >"$dir/rcc_profile.txt" 2>&1
+  # rcc ht vars mit derselben Umgebung wie der Testlauf: zeigt nur, was rcc selbst setzt
+  env ${proxy_env[@]+"${proxy_env[@]}"} rcc ht vars -r "$ROBOT_YAML" --space "$SPACE" >"$dir/htvars.txt" 2>&1
+  run_limited "$dir/robot_console.txt" \
+    env ${proxy_env[@]+"${proxy_env[@]}"} \
+    rcc task script -r "$ROBOT_YAML" --space "$SPACE" --silent -- robot "${robot_args[@]}"
+  rc=$?
 
   save_proxy_logs "$dir"
 

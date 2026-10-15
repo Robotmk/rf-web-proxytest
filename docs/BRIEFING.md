@@ -1,8 +1,8 @@
 # Briefing: Proxies mit Robotmk, RCC und Browser Library
 
-14.10.2026 · Simon Meggle
+15.10.2026 · Simon Meggle
 
-Ein RCC-Proxyprofil leitet Python-Traffic über den Proxy, den Browser der Browser Library aber nicht: Der braucht `proxy=` in `New Browser`. Dieses Briefing fasst die Messungen aus dem Projekt rf-web-proxytest für einen Blogartikel an Robotmk-Anwender zusammen.
+Ein RCC-Proxyprofil leitet Python-Traffic über den Proxy, den Browser der Browser Library aber nicht: Der braucht `proxy=` in `New Browser`. Dieses Briefing fasst die Messungen aus dem Projekt rf-web-proxytest (macOS und Windows) für einen Blogartikel an Robotmk-Anwender zusammen.
 
 **Wichtig für den Artikel:** Alle Messungen laufen ausschließlich mit Browser Library 20.6.0. Versionen vor 20.4.0 hatten einen Fehler, durch den die interne gRPC-Kommunikation ohne `NO_PROXY=localhost` nicht funktionierte ([robotframework-browser#1037](https://github.com/MarketSquare/robotframework-browser/issues/1037)). Der Artikel sollte das ausdrücklich sagen und mindestens 20.4.0 voraussetzen.
 
@@ -43,10 +43,15 @@ Zwei mitmproxy-Instanzen protokollieren jeden Request, auch HTTPS; so ist pro Sz
 | Proxy A, `localhost:3128` | wird per RCC-Profil bzw. `HTTP(S)_PROXY` gesetzt |
 | Proxy B, `localhost:3129` | wird nur in `New Browser … proxy=` gesetzt |
 | `proxy.robot` | loggt die Proxy-Variablen, schickt einen Python-Request (urllib), öffnet `http://example.com` und `https://example.org` im Browser |
-| `run_scenarios.sh` (macOS/Linux) | Proxies in Docker; ohne Option setzt es die Variablen selbst, mit `--rcc` nutzt es RCC-Profil und `rcc task script` |
+| `run_scenarios.sh` (macOS/Linux) | Proxies in Docker |
 | `run_scenarios.ps1` (Windows) | Proxies als lokale mitmdump-Prozesse aus einem rcc-Environment, kein Docker |
 
-Optionen beider Skripte: `--rcc`, `--auth` (Proxies verlangen Benutzer/Passwort) und `--fail` (zusätzlich Szenario 5, `NO_PROXY` fehlt). Alle Szenarien laufen mit Browser Library 20.6.0.
+rcc baut in beiden Skripten das Environment, und robot läuft immer über `rcc task script`, wie unter Robotmk. Die Läufe unterscheiden sich darin, woher Proxy A kommt:
+
+- `profile`: aus einem RCC-Proxyprofil, der Robotmk-Weg.
+- `env`: ohne Profil aus `HTTP(S)_PROXY`/`NO_PROXY` in der Umgebung des Aufrufers, die `rcc task script` an den Test vererbt. Das ist die Gegenprobe: Liefern beide Läufe dasselbe, wirkt das Profil nur über diese Variablen.
+
+Weitere Optionen: `--auth` (Proxies verlangen Benutzer/Passwort), `--fail` (zusätzlich Szenario 5, `NO_PROXY` fehlt) und unter Windows `-SystemProxy` (WinINET-Proxy des Benutzers zeigt auf Proxy A). Alle Szenarien laufen mit Browser Library 20.6.0.
 
 | # | Proxy A | `NO_PROXY` | `New Browser` |
 | --- | --- | --- | --- |
@@ -60,7 +65,9 @@ Im Docker-Container zeigt `127.0.0.1` auf den Container selbst, wie bei einem ec
 
 ## Messergebnisse
 
-Alle 20 Szenarien sind grün (Browser Library 20.6.0, macOS, kein Systemproxy): je fünf in den Läufen `env`, `rcc`, `env-auth` und `rcc-auth`. Mit rcc und mit selbst gesetzten Variablen sind die Ergebnisse identisch.
+**macOS:** Alle 20 Szenarien sind grün (Browser Library 20.6.0, kein Systemproxy): je fünf in den Läufen `env`, `rcc`, `env-auth` und `rcc-auth`. Mit rcc und mit selbst gesetzten Variablen sind die Ergebnisse identisch.
+
+**Windows:** Messung auf Windows Server 2022 mit rcc v17.29.1 als Administrator, ohne Systemproxy (WinINET `ProxyEnable=0`, keine PAC-Datei, WinHTTP direkt). Der Lauf `rcc-auth` mit RCC-Profil, Authentifizierung und Szenario 5 ist vollständig grün (5 von 5). Im Lauf `env` sind die Szenarien 2 bis 5 grün. Szenario 1 brach dort nach 5 s ab; schuld war ein inzwischen behobener Fehler im Skript, der die Szenarionummer als Timeout las. Den Browser-Weg in Szenario 1 belegt der Lauf `rcc-auth`. Wege und 407-Zählung stimmen mit macOS überein.
 
 | # | Proxy A | `NO_PROXY` | `New Browser` | Python-Request | Browser-Traffic |
 | --- | --- | --- | --- | --- | --- |
@@ -70,7 +77,7 @@ Alle 20 Szenarien sind grün (Browser Library 20.6.0, macOS, kein Systemproxy): 
 | 4 | nein | – | Proxy B | direkt | Proxy B |
 | 5 | ja | fehlt | ohne `proxy` | Proxy A | direkt, Test läuft |
 
-Mit Authentifizierung nehmen alle Requests dieselben Wege. Python schickt die Zugangsdaten aus der URL sofort mit (0× 407), Chromium erhält einmal 407 und authentifiziert sich dann über `username`/`password`.
+Die Tabelle gilt für beide Plattformen. Mit Authentifizierung nehmen alle Requests dieselben Wege. Python schickt die Zugangsdaten aus der URL sofort mit (0× 407), Chromium erhält einmal 407 und authentifiziert sich dann über `username`/`password`.
 
 Log-Auszug Szenario 2, gut als Abbildung für den Artikel:
 
@@ -98,6 +105,8 @@ Im RCC-Profil und in den Variablen stehen sie in der URL: `http://proxyuser:s3cr
 ### Windows: der Systemproxy
 
 Ohne `proxy=` nutzt Chromium unter Windows die WinINET-Einstellungen (Internetoptionen, PAC, WPAD) des Benutzers, unter dem der Test läuft. Läuft der Robotmk-Scheduler als SYSTEM, sind es dessen Einstellungen, nicht die des angemeldeten Admins. Auch Python-urllib liest unter Windows ohne Env-Variablen die Registry.
+
+Gemessen ist bisher der Fall ohne Systemproxy: Dort geht Chromium unter Windows wie unter macOS direkt, das RCC-Profil hat keinen Einfluss. Wie sich ein gesetzter WinINET-Proxy oder eine PAC-Datei auswirkt, ist noch offen (siehe offene Punkte). Für den Artikel lässt sich die Aussage deshalb nur als Erwartung formulieren, nicht als Messergebnis.
 
 ## Empfehlungen und Snippets
 
@@ -158,7 +167,7 @@ Gliederung (ca. 1.500–2.000 Wörter):
 4. Ergebnisse als Tabelle, Szenario 1 bis 4.
 5. `NO_PROXY` und gRPC: früher ein Fallstrick, seit 20.4.0 behoben (Szenario 5, Issue #1037).
 6. Authentifizierung: URL im Profil, Felder im Browser.
-7. Windows und SYSTEM-Benutzer.
+7. Windows: gleiche Ergebnisse ohne Systemproxy; Hinweis auf WinINET und den SYSTEM-Benutzer.
 8. Checkliste und Snippets zum Kopieren.
 
 Grafiken:
@@ -169,7 +178,8 @@ Grafiken:
 
 ## Offene Punkte und Quellen
 
-- [ ] `run_scenarios.ps1` auf einem Windows-Host ausführen; bisher nur auf macOS gemessen
+- [x] `run_scenarios.ps1` auf einem Windows-Host ausführen (Windows Server 2022, Lauf `rcc-auth` vollständig, `env` bis auf Szenario 1)
+- [ ] Unter Windows Szenario 1 im Lauf `env` wiederholen sowie die Läufe `rcc` und `env-auth` ergänzen
 - [ ] Windows mit gesetztem WinINET-Proxy und mit PAC-Datei prüfen (Szenario 1 und 3 sollten dann über den Systemproxy laufen)
 - [ ] Robotmk-Scheduler als SYSTEM gegen einen angemeldeten Benutzer vergleichen
 - [ ] Sonderzeichen im Proxy-Passwort (URL-Kodierung im RCC-Profil) testen
@@ -177,7 +187,7 @@ Grafiken:
 
 Quellen (lokal im Projekt rf-web-proxytest):
 
-- `README.md`, `run_scenarios.sh`, `run_scenarios.ps1`, `results/<env|rcc>[-auth]/summary.txt`
+- `README.md`, `run_scenarios.sh`, `run_scenarios.ps1`, `results/<env|rcc>[-auth]/summary.txt` (macOS), `results/windows-<env|rcc>[-auth]/summary.txt` (Windows)
 - Browser Library 20.6.0: `Browser/playwright.py`, Funktion `grpc_channel_options` (setzt `grpc.enable_http_proxy=0` für lokale Hosts)
 - [robotframework-browser#1037](https://github.com/MarketSquare/robotframework-browser/issues/1037): gRPC ohne `NO_PROXY=localhost`, behoben in 20.4.0
 - rcc v17.29.1: `rcc ht vars`, `rcc config import/switch`, `rcc task script`

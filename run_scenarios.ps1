@@ -11,18 +11,23 @@
     (mitmproxy/robot.yaml). Das Addon mitmproxy/block_loopback.py weist Ziele auf localhost mit 502 ab,
     wie es ein Proxy auf einem anderen Host täte.
 
-    rcc wird vorausgesetzt. Ohne -Rcc dient es nur dazu, die Environments zu bauen und zu aktivieren
-    (rcc ht vars ohne Profil); die Proxy-Variablen setzt das Skript selbst und robot läuft direkt.
+    rcc baut und aktiviert immer das Environment, robot läuft immer über "rcc task script".
+    Unterschied der Modi ist nur, woher die Proxy-Variablen für Proxy A kommen (-ProxyFrom).
 
-    Ergebnisse: results\windows-<env|rcc>[-auth]\scenarioN\ und ...\summary.txt
+    Ergebnisse: results\windows-<profile|env>[-auth][-sysproxy]\scenarioN\ und ...\summary.txt
 
-.PARAMETER Rcc
-    rcc als Unterbau: RCC-Profil erzeugen/aktivieren, robot via "rcc task script".
+.PARAMETER ProxyFrom
+    profile (Default): RCC-Proxyprofil erzeugen und aktivieren.
+    env: kein RCC-Profil; das Skript setzt HTTP(S)_PROXY/NO_PROXY selbst und "rcc task script" vererbt
+    sie an robot (Gegenprobe zum Profil).
 .PARAMETER Auth
     Proxies verlangen Benutzer/Passwort (Env-Variablen/RCC-Profil bzw. New Browser proxy=).
 .PARAMETER Fail
     Zusätzlich Szenario 5: NO_PROXY fehlt. Vor Browser Library 20.4.0 scheiterte daran die interne
     gRPC-Verbindung; getestet wird nur 20.6.0.
+.PARAMETER SystemProxy
+    Setzt für die Dauer des Laufs den WinINET-Proxy des Benutzers (HKCU) auf Proxy A und stellt danach
+    den vorherigen Zustand wieder her. Zeigt, welchem Proxy Chromium ohne proxy= folgt. Nicht mit -Auth.
 .PARAMETER Scenario
     Nur diese Szenarien ausführen.
 .PARAMETER Timeout
@@ -31,15 +36,19 @@
 .EXAMPLE
     .\run_scenarios.ps1
 .EXAMPLE
-    .\run_scenarios.ps1 -Rcc -Auth
+    .\run_scenarios.ps1 -ProxyFrom env -Auth
 .EXAMPLE
-    .\run_scenarios.ps1 -Rcc -Fail 5
+    .\run_scenarios.ps1 -Fail 5
+.EXAMPLE
+    .\run_scenarios.ps1 -SystemProxy -Fail
 #>
 # Ohne PositionalBinding=$false bände PowerShell "5" an -Timeout statt an -Scenario.
 [CmdletBinding(PositionalBinding = $false)]
 param(
-    [switch]$Rcc,
+    [ValidateSet('profile', 'env')]
+    [string]$ProxyFrom = 'profile',
     [switch]$Auth,
+    [switch]$SystemProxy,
     [switch]$Fail,
     [Parameter(ValueFromRemainingArguments = $true)]
     [int[]]$Scenario = @(),
@@ -49,6 +58,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
+if ($SystemProxy -and $Auth) { throw '-SystemProxy und -Auth lassen sich nicht kombinieren (Chromium kennt ohne proxy= keine Zugangsdaten).' }
 
 # Nur die Variablen dieses Skripts bzw. des RCC-Profils sollen wirken, nicht die der aufrufenden Shell
 # (rcc task script vererbt die Umgebung des aufrufenden Prozesses). Windows-Env ist case-insensitiv.
@@ -58,8 +68,7 @@ foreach ($name in $ProxyVarNames) { Remove-Item "Env:$name" -ErrorAction Silentl
 $ProxyUser = 'proxyuser'
 $ProxyPass = 's3cr3t'
 $NoProxyList = 'localhost,127.0.0.1'
-$Mode = if ($Rcc) { 'rcc' } else { 'env' }
-$Run = $Mode + $(if ($Auth) { '-auth' } else { '' })
+$Run = $ProxyFrom + $(if ($Auth) { '-auth' } else { '' }) + $(if ($SystemProxy) { '-sysproxy' } else { '' })
 $Results = Join-Path 'results' "windows-$Run"
 $RobotYaml = 'robot.yaml'   # Browser Library 20.6.0 (conda.yaml)
 $Space = 'proxytest'
@@ -180,14 +189,15 @@ function Write-RccProfile([string]$NoProxy) {
     $name = 'proxytest-a'
     if ($Auth) { $name += '-auth' }
     if ($NoProxy -eq 'nein') { $name += '-nonoproxy' }
-    $desc = 'RCC-Proxyprofil -> mitmproxy A (localhost:3128), erzeugt von run_scenarios.ps1'
+    $desc = 'RCC-Proxyprofil -> mitmproxy A (localhost:3128)'
     $lines = @("name: $name", "description: $desc", 'settings:', '  certificates:', '    verify-ssl: false', '  network:')
     if ($NoProxy -eq 'ja') { $lines += "    no-proxy: '$NoProxyList'" }
     $lines += @("    https-proxy: '$ProxyA'", "    http-proxy: '$ProxyA'", '  meta:', "    name: $name",
                 "    description: $desc", '    source: Robotmk')
     New-Item -ItemType Directory -Force profiles | Out-Null
     $file = Join-Path (Resolve-Path profiles).Path "$name.yaml"
-    [IO.File]::WriteAllLines($file, [string[]]$lines)
+    # LF wie run_scenarios.sh, damit die Profile auf beiden Plattformen byte-gleich entstehen
+    [IO.File]::WriteAllText($file, ($lines -join "`n") + "`n")
     Invoke-Rcc @('config', 'import', '-f', $file) | Out-Null
     $name
 }
@@ -202,6 +212,30 @@ function Get-SystemProxyInfo {
     "WinINET (HKCU): ProxyEnable=$enable ProxyServer='$server' AutoConfigURL='$pac' | WinHTTP: $($winhttp.Trim())"
 }
 
+$InetKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings'
+$InetNames = 'ProxyEnable', 'ProxyServer', 'ProxyOverride'
+
+function Save-SystemProxy {
+    # Merkt sich die WinINET-Werte; $null heißt: Wert existierte nicht
+    $is = Get-ItemProperty $InetKey
+    $saved = @{}
+    foreach ($n in $InetNames) { $saved[$n] = if ($is.PSObject.Properties[$n]) { $is.$n } else { $null } }
+    $saved
+}
+
+function Restore-SystemProxy([hashtable]$Saved) {
+    foreach ($n in $InetNames) {
+        if ($null -eq $Saved[$n]) { Remove-ItemProperty $InetKey -Name $n -ErrorAction SilentlyContinue }
+        else { Set-ItemProperty $InetKey -Name $n -Value $Saved[$n] }
+    }
+}
+
+function Set-SystemProxyToA {
+    Set-ItemProperty $InetKey -Name ProxyServer -Value 'localhost:3128'
+    Set-ItemProperty $InetKey -Name ProxyOverride -Value '<local>'
+    Set-ItemProperty $InetKey -Name ProxyEnable -Value 1 -Type DWord
+}
+
 # --- Vorbereitung ----------------------------------------------------------------------------
 
 New-Item -ItemType Directory -Force $Results | Out-Null
@@ -210,6 +244,7 @@ Set-Content -Path $Summary -Value $null -Encoding utf8
 function Write-Summary([string]$Text) { Write-Host $Text; Add-Content -Path $Summary -Value $Text -Encoding utf8 }
 
 $OrigProfile = Get-RccProfile
+$OrigSystemProxy = if ($SystemProxy) { Save-SystemProxy } else { $null }
 $proxies = @()
 try {
     # Environments ohne Profil bauen/aktivieren: Ein Proxyprofil zeigte jetzt auf noch nicht laufende Proxies.
@@ -217,7 +252,8 @@ try {
     Write-Host 'Environments vorbereiten (rcc ht vars, beim ersten Mal dauert das) ...'
     $script:MitmEnv = Get-HolotreeEnv -RobotYaml 'mitmproxy/robot.yaml' -Space 'proxytest-mitmproxy'
     $script:MitmEnv['PYTHONUNBUFFERED'] = '1'   # Log-Zeilen sofort schreiben, mitmdump wird hart beendet
-    $BaseRobotEnv = Get-HolotreeEnv -RobotYaml $RobotYaml -Space $Space
+    Get-HolotreeEnv -RobotYaml $RobotYaml -Space $Space | Out-Null
+    if ($SystemProxy) { Set-SystemProxyToA }
     $browserVersion = if ((Get-Content 'conda.yaml' -Raw) -match 'robotframework-browser==([0-9.]+)') { $Matches[1] } else { '?' }
 
     Write-Summary "Lauf: windows-$Run | Proxy A: $ProxyA | Proxy B: http://localhost:3129$(if ($Auth) { " (Auth ${ProxyUser}:${ProxyPass})" })"
@@ -240,28 +276,29 @@ try {
         $proxies = @((Start-Proxy 'proxyA' 3128 $dir), (Start-Proxy 'proxyB' 3129 $dir))
         $console = Join-Path $dir 'robot_console.txt'
 
-        if ($Rcc) {
-            if ($s.Proxy -eq 'A') {
-                $profileName = Write-RccProfile $s.NoProxy
-                Invoke-Rcc @('config', 'switch', '-p', $profileName) | Out-Null
-            }
-            else { Invoke-Rcc @('config', 'switch', '-n') | Out-Null }
-            Invoke-Rcc @('config', 'switch') | Set-Content (Join-Path $dir 'rcc_profile.txt') -Encoding utf8
-            Invoke-Rcc @('ht', 'vars', '-r', $RobotYaml, '--space', $Space) | Set-Content (Join-Path $dir 'htvars.txt') -Encoding utf8
-            $proc = Start-WithEnv -Command 'rcc' -LogFile $console `
-                -Arguments (@('task', 'script', '-r', $RobotYaml, '--space', $Space, '--silent', '--', 'robot') + $robotArgs)
+        # profile: Proxy A kommt aus dem RCC-Profil. env: kein Profil, dieselben Variablen stehen in der
+        # Umgebung des rcc-Prozesses und werden an robot vererbt.
+        $callerEnv = @{}
+        if ($ProxyFrom -eq 'profile' -and $s.Proxy -eq 'A') {
+            $profileName = Write-RccProfile $s.NoProxy
+            Invoke-Rcc @('config', 'switch', '-p', $profileName) | Out-Null
         } else {
-            # Environment wie von rcc aktiviert, aber ohne Profil; die Proxy-Variablen setzt das Skript selbst
-            $robotEnv = $BaseRobotEnv.Clone()
+            Invoke-Rcc @('config', 'switch', '-n') | Out-Null
             if ($s.Proxy -eq 'A') {
-                $robotEnv['HTTP_PROXY'] = $ProxyA
-                $robotEnv['HTTPS_PROXY'] = $ProxyA
-                if ($s.NoProxy -eq 'ja') { $robotEnv['NO_PROXY'] = $NoProxyList }
+                $callerEnv['HTTP_PROXY'] = $ProxyA
+                $callerEnv['HTTPS_PROXY'] = $ProxyA
+                if ($s.NoProxy -eq 'ja') { $callerEnv['NO_PROXY'] = $NoProxyList }
             }
-            $ProxyVarNames | Where-Object { $robotEnv.ContainsKey($_) } | ForEach-Object { "$_=$($robotEnv[$_])" } |
-                Set-Content (Join-Path $dir 'proxy_env.txt') -Encoding utf8
-            $proc = Start-WithEnv -Command 'robot' -Arguments $robotArgs -Environment $robotEnv -LogFile $console
         }
+        $ProxyVarNames | Where-Object { $callerEnv.ContainsKey($_) } | ForEach-Object { "$_=$($callerEnv[$_])" } |
+            Set-Content (Join-Path $dir 'caller_env.txt') -Encoding utf8
+        Invoke-Rcc @('config', 'switch') | Set-Content (Join-Path $dir 'rcc_profile.txt') -Encoding utf8
+        # rcc ht vars mit derselben Umgebung wie der Testlauf: zeigt nur, was rcc selbst setzt
+        $htvars = Start-WithEnv -Command 'rcc' -Arguments @('ht', 'vars', '-r', $RobotYaml, '--space', $Space) `
+            -Environment $callerEnv -LogFile (Join-Path $dir 'htvars.txt')
+        $htvars.WaitForExit()
+        $proc = Start-WithEnv -Command 'rcc' -Environment $callerEnv -LogFile $console `
+            -Arguments (@('task', 'script', '-r', $RobotYaml, '--space', $Space, '--silent', '--', 'robot') + $robotArgs)
 
         if ($proc.WaitForExit($Timeout * 1000)) {
             $rc = $proc.ExitCode
@@ -293,6 +330,10 @@ try {
     }
 } finally {
     foreach ($p in $proxies) { Stop-Tree $p }
+    if ($OrigSystemProxy) {
+        Restore-SystemProxy $OrigSystemProxy
+        Write-Host "WinINET-Proxy zurückgesetzt: $(Get-SystemProxyInfo)"
+    }
     if ($OrigProfile -and $OrigProfile -ne 'default') { Invoke-Rcc @('config', 'switch', '-p', $OrigProfile) | Out-Null }
     else { Invoke-Rcc @('config', 'switch', '-n') | Out-Null }
     Write-Host "RCC-Profil zurückgesetzt auf: $(if ($OrigProfile) { $OrigProfile } else { '<keins>' })"
