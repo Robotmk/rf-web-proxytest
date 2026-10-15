@@ -1,0 +1,21 @@
+==============================================================================
+Proxy :: Welcher Proxy wird vom Browser genutzt? Die Browser-Konfiguration ...
+==============================================================================
+Proxy Environment Variables :: Zeigt, welche Proxy-Variablen rcc i... HTTP_PROXY=<nicht gesetzt>
+HTTPS_PROXY=<nicht gesetzt>
+NO_PROXY=<nicht gesetzt>
+http_proxy=<nicht gesetzt>
+https_proxy=<nicht gesetzt>
+no_proxy=<nicht gesetzt>
+| PASS |
+------------------------------------------------------------------------------
+Python Request (Kontrolle) :: Positivkontrolle: Python (urllib) we... | PASS |
+------------------------------------------------------------------------------
+Open HTTP And HTTPS Page                                              | PASS |
+------------------------------------------------------------------------------
+Proxy :: Welcher Proxy wird vom Browser genutzt? Die Browser-Konfi... | PASS |
+3 tests, 3 passed, 0 failed
+==============================================================================
+Output:  C:\Users\Administrator\Documents\rf-web-proxytest\results\windows-profile-auth\scenario4\output.xml
+Log:     C:\Users\Administrator\Documents\rf-web-proxytest\results\windows-profile-auth\scenario4\log.html
+Report:  C:\Users\Administrator\Documents\rf-web-proxytest\results\windows-profile-auth\scenario4\report.html

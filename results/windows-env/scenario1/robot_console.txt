@@ -11,4 +11,11 @@ no_proxy=localhost,127.0.0.1
 ------------------------------------------------------------------------------
 Python Request (Kontrolle) :: Positivkontrolle: Python (urllib) we... | PASS |
 ------------------------------------------------------------------------------
-Open HTTP And HTTPS Page                                              ### Abgebrochen nach 5s (run_scenarios.ps1)
+Open HTTP And HTTPS Page                                              | PASS |
+------------------------------------------------------------------------------
+Proxy :: Welcher Proxy wird vom Browser genutzt? Die Browser-Konfi... | PASS |
+3 tests, 3 passed, 0 failed
+==============================================================================
+Output:  C:\Users\Administrator\Documents\rf-web-proxytest\results\windows-env\scenario1\output.xml
+Log:     C:\Users\Administrator\Documents\rf-web-proxytest\results\windows-env\scenario1\log.html
+Report:  C:\Users\Administrator\Documents\rf-web-proxytest\results\windows-env\scenario1\report.html

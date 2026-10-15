@@ -1,0 +1,9 @@
+﻿Available profiles:
+- proxytest-a-auth-nonoproxy: RCC-Proxyprofil -> mitmproxy A (localhost:3128), erzeugt von run_scenarios.ps1
+- proxytest-a-auth: RCC-Proxyprofil -> mitmproxy A (localhost:3128)
+- proxytest-a-nonoproxy: RCC-Proxyprofil -> mitmproxy A (localhost:3128)
+- proxytest-a: RCC-Proxyprofil -> mitmproxy A (localhost:3128)
+- MyProxy: RCC proxy profile
+
+Currently active profile is: proxytest-a-auth
+OK.

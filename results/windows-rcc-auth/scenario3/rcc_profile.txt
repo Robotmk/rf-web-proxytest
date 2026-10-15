@@ -1,6 +1,0 @@
-﻿Available profiles:
-- proxytest-a-auth: RCC-Proxyprofil -> mitmproxy A (localhost:3128), erzeugt von run_scenarios.ps1
-- MyProxy: RCC proxy profile
-
-Currently active profile is: default
-OK.

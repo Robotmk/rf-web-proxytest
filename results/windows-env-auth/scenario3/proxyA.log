@@ -1,0 +1,4 @@
+[12:25:42.688] Loading script C:\Users\Administrator\Documents\rf-web-proxytest\mitmproxy\block_loopback.py
+[12:25:42.688] HTTP(S) proxy listening at 127.0.0.1:3128.
+[12:25:42.962][127.0.0.1:50786] client connect
+[12:25:42.962][127.0.0.1:50786] client disconnect

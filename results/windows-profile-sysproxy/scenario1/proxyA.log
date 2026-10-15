@@ -1,0 +1,30 @@
+[12:26:22.902] Loading script C:\Users\Administrator\Documents\rf-web-proxytest\mitmproxy\block_loopback.py
+[12:26:22.902] HTTP(S) proxy listening at 127.0.0.1:3128.
+[12:26:23.181][127.0.0.1:50849] client connect
+[12:26:23.197][127.0.0.1:50850] client connect
+[12:26:23.197][127.0.0.1:50850] client disconnect
+[12:26:23.291][127.0.0.1:50849] server connect mobile.events.data.microsoft.com:443 (20.42.65.89:443)
+[12:26:23.417][127.0.0.1:50848] client connect
+[12:26:23.512][127.0.0.1:50848] server connect mobile.events.data.microsoft.com:443 (20.42.65.89:443)
+[12:26:23.531][127.0.0.1:50849] Client TLS handshake failed. The client does not trust the proxy's certificate for mobile.events.data.microsoft.com (OpenSSL Error([('SSL routines', '', 'ssl/tls alert certificate unknown')]))
+[12:26:23.531][127.0.0.1:50849] client disconnect
+[12:26:23.531][127.0.0.1:50849] server disconnect mobile.events.data.microsoft.com:443 (20.42.65.89:443)
+[12:26:23.698][127.0.0.1:50848] Client TLS handshake failed. The client does not trust the proxy's certificate for mobile.events.data.microsoft.com (OpenSSL Error([('SSL routines', '', 'ssl/tls alert certificate unknown')]))
+[12:26:23.698][127.0.0.1:50848] client disconnect
+[12:26:23.698][127.0.0.1:50848] server disconnect mobile.events.data.microsoft.com:443 (20.42.65.89:443)
+[12:26:27.094][127.0.0.1:50861] client connect
+[12:26:27.187][127.0.0.1:50861] server connect mobile.events.data.microsoft.com:443 (20.42.65.89:443)
+[12:26:27.354][127.0.0.1:50863] client connect
+[12:26:27.431][127.0.0.1:50861] Client TLS handshake failed. The client does not trust the proxy's certificate for mobile.events.data.microsoft.com (OpenSSL Error([('SSL routines', '', 'ssl/tls alert certificate unknown')]))
+[12:26:27.431][127.0.0.1:50861] client disconnect
+[12:26:27.431][127.0.0.1:50861] server disconnect mobile.events.data.microsoft.com:443 (20.42.65.89:443)
+[12:26:27.444][127.0.0.1:50863] server connect mobile.events.data.microsoft.com:443 (20.42.65.89:443)
+[12:26:27.631][127.0.0.1:50863] Client TLS handshake failed. The client does not trust the proxy's certificate for mobile.events.data.microsoft.com (OpenSSL Error([('SSL routines', '', 'ssl/tls alert certificate unknown')]))
+[12:26:27.631][127.0.0.1:50863] client disconnect
+[12:26:27.631][127.0.0.1:50863] server disconnect mobile.events.data.microsoft.com:443 (20.42.65.89:443)
+[12:26:32.134][127.0.0.1:50869] client connect
+[12:26:32.134][127.0.0.1:50869] server connect example.com:80 ([2606:4700:10::6814:179a]:80)
+127.0.0.1:50869: GET http://example.com/?via=python-urllib
+              << 200 OK 577b
+[12:26:32.165][127.0.0.1:50869] server disconnect example.com:80 ([2606:4700:10::6814:179a]:80)
+[12:26:32.165][127.0.0.1:50869] client disconnect

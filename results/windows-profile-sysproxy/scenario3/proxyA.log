@@ -1,0 +1,20 @@
+[12:26:50.421] Loading script C:\Users\Administrator\Documents\rf-web-proxytest\mitmproxy\block_loopback.py
+[12:26:50.421] HTTP(S) proxy listening at 127.0.0.1:3128.
+[12:26:50.763][127.0.0.1:50897] client connect
+[12:26:50.763][127.0.0.1:50897] client disconnect
+[12:26:54.169][127.0.0.1:50906] client connect
+[12:26:54.177][127.0.0.1:50906] server connect main.vscode-cdn.net:443 ([2603:1061:14:174::1]:443)
+[12:26:54.218][127.0.0.1:50906] Client TLS handshake failed. The client does not trust the proxy's certificate for main.vscode-cdn.net (OpenSSL Error([('SSL routines', '', 'ssl/tls alert certificate unknown')]))
+[12:26:54.218][127.0.0.1:50906] client disconnect
+[12:26:54.218][127.0.0.1:50906] server disconnect main.vscode-cdn.net:443 ([2603:1061:14:174::1]:443)
+[12:26:54.433][127.0.0.1:50908] client connect
+[12:26:54.440][127.0.0.1:50908] server connect main.vscode-cdn.net:443 ([2603:1061:14:174::1]:443)
+[12:26:54.449][127.0.0.1:50908] Client TLS handshake failed. The client does not trust the proxy's certificate for main.vscode-cdn.net (OpenSSL Error([('SSL routines', '', 'ssl/tls alert certificate unknown')]))
+[12:26:54.449][127.0.0.1:50908] client disconnect
+[12:26:54.449][127.0.0.1:50908] server disconnect main.vscode-cdn.net:443 ([2603:1061:14:174::1]:443)
+[12:26:59.616][127.0.0.1:50914] client connect
+[12:26:59.660][127.0.0.1:50914] server connect example.com:80 ([2606:4700:10::6814:179a]:80)
+127.0.0.1:50914: GET http://example.com/?via=python-urllib
+              << 200 OK 577b
+[12:26:59.668][127.0.0.1:50914] server disconnect example.com:80 ([2606:4700:10::6814:179a]:80)
+[12:26:59.668][127.0.0.1:50914] client disconnect

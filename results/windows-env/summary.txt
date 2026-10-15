@@ -1,6 +1,18 @@
 ﻿Lauf: windows-env | Proxy A: http://localhost:3128 | Proxy B: http://localhost:3129
 WinINET (HKCU): ProxyEnable=0 ProxyServer='' AutoConfigURL='' | WinHTTP: Direct access (no proxy server).
 
+Szenario 1 | Proxy A: A | NO_PROXY: ja | Browser 20.6 | browser_noproxy.resource
+  Ergebnis:         PASS, wie erwartet
+  Env im Test:      HTTP_PROXY=http://localhost:3128 HTTPS_PROXY=http://localhost:3128 NO_PROXY=localhost,127.0.0.1
+  Test -> Proxy A:  http://example.com/?via=python-urllib
+  Test -> Proxy B:  
+
+Szenario 2 | Proxy A: A | NO_PROXY: ja | Browser 20.6 | browser_proxyB.resource
+  Ergebnis:         PASS, wie erwartet
+  Env im Test:      HTTP_PROXY=http://localhost:3128 HTTPS_PROXY=http://localhost:3128 NO_PROXY=localhost,127.0.0.1
+  Test -> Proxy A:  http://example.com/?via=python-urllib
+  Test -> Proxy B:  http://example.com/ http://example.com/s.js https://example.org/ https://example.org/s.js
+
 Szenario 3 | Proxy A: - | NO_PROXY: - | Browser 20.6 | browser_noproxy.resource
   Ergebnis:         PASS, wie erwartet
   Env im Test:      HTTP_PROXY=<nicht gesetzt> HTTPS_PROXY=<nicht gesetzt> NO_PROXY=<nicht gesetzt>
@@ -12,4 +24,10 @@ Szenario 4 | Proxy A: - | NO_PROXY: - | Browser 20.6 | browser_proxyB.resource
   Env im Test:      HTTP_PROXY=<nicht gesetzt> HTTPS_PROXY=<nicht gesetzt> NO_PROXY=<nicht gesetzt>
   Test -> Proxy A:  
   Test -> Proxy B:  http://example.com/ http://example.com/s.js https://example.org/ https://example.org/s.js
+
+Szenario 5 | Proxy A: A | NO_PROXY: nein | Browser 20.6 | browser_noproxy.resource
+  Ergebnis:         PASS, wie erwartet
+  Env im Test:      HTTP_PROXY=http://localhost:3128 HTTPS_PROXY=http://localhost:3128 NO_PROXY=<nicht gesetzt>
+  Test -> Proxy A:  http://example.com/?via=python-urllib
+  Test -> Proxy B:  
 
