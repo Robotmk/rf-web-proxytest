@@ -1,0 +1,52 @@
+Note! For now, resolved effective environment configuration file is "/Users/simon/Documents/01_Development/06_Minimalbeispiele/rf-web-proxytest/conda.yaml".
+####  Progress: 00/15  v17.29.1     0.079s  Context: "Simon Meggle" <simon@f2e9f60d-f6c5-48b2-b599-5ca34cfee4b1.fritz.box> [darwin_amd64/ProductName: macOS; ProductVersion: 15.6.1; BuildVersion: 24G90].
+####  Progress: 01/15  v17.29.1     0.001s  Fresh [private mode] holotree environment 61dd874c-d38c-2621-b9b1-f903d55a52e5. (parent/pid: 9913/14730)
+####  Progress: 02/15  v17.29.1     0.005s  Holotree blueprint is "fa1811b2b72c197a" [darwin_amd64 with 9 workers on 10 CPUs from "fa1811b2b72c197a"].
+FINAL unified conda environment descriptor:
+---
+channels:
+- conda-forge
+dependencies:
+- python=3.10.12
+- pip=23.2.1
+- nodejs>=20
+- pip:
+  - robotframework>=7.1.1
+  - robotframework-browser==20.6
+rccPostInstall:
+- rfbrowser init
+---
+####  Progress: 14/15  v17.29.1     0.972s  Restore space from library [with 9 workers on 10 CPUs; with compression: true].
+Installation plan is: /Users/simon/.robocorp/holotree/3a200ec_5a1fac3_0f0ceab2/rcc_plan.log
+Environment configuration descriptor is: /Users/simon/.robocorp/holotree/3a200ec_5a1fac3_0f0ceab2/identity.yaml
+####  Progress: 15/15  v17.29.1     1.912s  Fresh holotree done [with 9 workers on 10 CPUs].
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@  From rcc "v17.29.1" (controller: "user") point of view, "environment creation" was SUCCESS. @@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+export PYTHON_EXE=/Users/simon/.robocorp/holotree/3a200ec_5a1fac3_0f0ceab2/bin/python3
+export PYTHONDONTWRITEBYTECODE=x
+export PYTHONPYCACHEPREFIX=/Users/simon/.robocorp/temp/901cd5168472cb50
+export TEMP=/Users/simon/.robocorp/temp/901cd5168472cb50
+export TMP=/Users/simon/.robocorp/temp/901cd5168472cb50
+export CONDA_DEFAULT_ENV=rcc
+export CONDA_PREFIX=/Users/simon/.robocorp/holotree/3a200ec_5a1fac3_0f0ceab2
+export CONDA_PROMPT_MODIFIER=(rcc) 
+export CONDA_SHLVL=1
+export PYTHONHOME=
+export PYTHONSTARTUP=
+export PYTHONEXECUTABLE=
+export PYTHONNOUSERSITE=1
+export ROBOCORP_HOME=/Users/simon/.robocorp
+export RCC_ENVIRONMENT_HASH=fa1811b2b72c197a
+export RCC_INSTALLATION_ID=61dd874c-d38c-2621-b9b1-f903d55a52e5
+export RCC_HOLOTREE_SPACE_ROOT=/Users/simon/.robocorp/holotree/3a200ec_5a1fac3_0f0ceab2
+export RCC_TRACKING_ALLOWED=false
+export RCC_EXE=/Users/simon/bin/rcc
+export RCC_VERSION=v17.29.1
+export PATH=/Users/simon/.robocorp/holotree/3a200ec_5a1fac3_0f0ceab2/bin:/Users/simon/.local/state/fnm_multishells/9371_1792059542163/bin:/Users/simon/go/bin:/opt/homebrew/opt/go/libexec/bin:/Users/simon/.local/bin:/Users/simon/bin:/Users/simon/Library/Application Support/Code/User/globalStorage/github.copilot-chat/debugCommand:/Users/simon/Library/Application Support/Code/User/globalStorage/github.copilot-chat/copilotCli:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/usr/local/MacGPG2/bin:/usr/local/go/bin:/Users/simon/.local/state/fnm_multishells/47571_1791985812942/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/Applications/iTerm.app/Contents/Resources/utilities:/opt/homebrew/opt/fzf/bin:/Users/simon/.vscode/extensions/d-biehl.robotcode-2.7.0/bundled/scripts
+export MAMBA_ROOT_PREFIX=/Users/simon/.robocorp
+export SHLVL=3
+export PATH=/Users/simon/Documents/01_Development/06_Minimalbeispiele/rf-web-proxytest:/Users/simon/.robocorp/holotree/3a200ec_5a1fac3_0f0ceab2/bin:/Users/simon/.local/state/fnm_multishells/9371_1792059542163/bin:/Users/simon/go/bin:/opt/homebrew/opt/go/libexec/bin:/Users/simon/.local/bin:/Users/simon/bin:/Users/simon/Library/Application Support/Code/User/globalStorage/github.copilot-chat/debugCommand:/Users/simon/Library/Application Support/Code/User/globalStorage/github.copilot-chat/copilotCli:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/usr/local/MacGPG2/bin:/usr/local/go/bin:/Users/simon/.local/state/fnm_multishells/47571_1791985812942/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/Applications/iTerm.app/Contents/Resources/utilities:/opt/homebrew/opt/fzf/bin:/Users/simon/.vscode/extensions/d-biehl.robotcode-2.7.0/bundled/scripts
+export PYTHONPATH=/Users/simon/Documents/01_Development/06_Minimalbeispiele/rf-web-proxytest
+export ROBOT_ROOT=/Users/simon/Documents/01_Development/06_Minimalbeispiele/rf-web-proxytest
+export ROBOT_ARTIFACTS=/Users/simon/Documents/01_Development/06_Minimalbeispiele/rf-web-proxytest/output

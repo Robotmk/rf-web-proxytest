@@ -1,0 +1,6 @@
+HTTP_PROXY=http://localhost:3128
+HTTPS_PROXY=http://localhost:3128
+http_proxy=http://localhost:3128
+https_proxy=http://localhost:3128
+NO_PROXY=localhost,127.0.0.1
+no_proxy=localhost,127.0.0.1

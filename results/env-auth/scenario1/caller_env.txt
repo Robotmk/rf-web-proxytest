@@ -1,0 +1,6 @@
+HTTP_PROXY=http://proxyuser:s3cr3t@localhost:3128
+HTTPS_PROXY=http://proxyuser:s3cr3t@localhost:3128
+http_proxy=http://proxyuser:s3cr3t@localhost:3128
+https_proxy=http://proxyuser:s3cr3t@localhost:3128
+NO_PROXY=localhost,127.0.0.1
+no_proxy=localhost,127.0.0.1

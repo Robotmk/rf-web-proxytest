@@ -1,0 +1,22 @@
+[10:20:26.088] HTTP(S) proxy listening at *:8080.
+[10:20:27.007][172.17.0.1:42304] client connect
+172.17.0.1:42304: GET http://mitm.it/
+               << 200 OK 17.5k
+[10:20:27.271][172.17.0.1:42304] client disconnect
+[10:20:37.525][172.17.0.1:38370] client connect
+[10:20:37.593][172.17.0.1:38370] server connect example.com:80 (172.66.147.243:80)
+172.17.0.1:38370: GET http://example.com/
+               << 200 OK 400b
+172.17.0.1:38370: GET http://example.com/s.js
+               << 200 OK 1.3k
+[10:20:37.766][172.17.0.1:60056] client connect
+[10:20:37.810][172.17.0.1:60056] server connect example.org:443 (172.66.157.237:443)
+[10:20:38.083][172.17.0.1:60056] Client TLS handshake failed. The client does not trust the proxy's certificate for example.org (OpenSSL Error([('SSL routines', '', 'tls alert certificate unknown')]))
+[10:20:38.094][172.17.0.1:60064] client connect
+[10:20:38.100][172.17.0.1:60056] client disconnect
+[10:20:38.109][172.17.0.1:60056] server disconnect example.org:443 (172.66.157.237:443)
+[10:20:38.149][172.17.0.1:60064] server connect example.org:443 (172.66.157.237:443)
+172.17.0.1:60064: GET https://example.org/ HTTP/2.0
+      << HTTP/2.0 200 OK 334b
+172.17.0.1:60064: GET https://example.org/s.js HTTP/2.0
+      << HTTP/2.0 200 OK 1.3k
