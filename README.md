@@ -93,10 +93,19 @@ Alle Szenarien mit Browser Library 20.6.0:
 | 4 | nein | – | Proxy B | PASS |
 | 5 (`--fail`) | ja | **fehlt** | ohne `proxy` | PASS (vor 20.4.0: FAIL) |
 
-## Ergebnisse macOS (kein System-Proxy aktiv)
+## Ergebnisse
 
-Alle vier Läufe (`env`, `rcc`, `env-auth`, `rcc-auth`, jeweils mit `--fail`) mit Browser Library 20.6.0:
-20 von 20 Szenarien PASS. `env` und `rcc` liefern identische Zusammenfassungen, ebenso `env-auth` und `rcc-auth`.
+Browser Library 20.6.0 (Playwright 1.63), rcc v17.29.1. Neun Läufe mit je fünf Szenarien (`--fail`), 45 von 45 PASS:
+
+| Plattform | Läufe |
+|---|---|
+| macOS, kein System-Proxy | `profile`, `env`, `profile-auth`, `env-auth` |
+| Windows Server 2022 (Administrator), kein System-Proxy | `windows-profile`, `windows-env`, `windows-profile-auth`, `windows-env-auth` |
+| Windows Server 2022, WinINET-Proxy → Proxy A | `windows-profile-sysproxy` |
+
+### Ohne System-Proxy (macOS und Windows identisch)
+
+`profile` und `env` liefern identische Zusammenfassungen, ebenso `profile-auth` und `env-auth`, auf beiden Plattformen.
 
 | # | Proxy A | `NO_PROXY` | `New Browser` | Env im Test | Python-Request | Browser-Traffic |
 |---|---|---|---|---|---|---|
@@ -109,6 +118,9 @@ Alle vier Läufe (`env`, `rcc`, `env-auth`, `rcc-auth`, jeweils mit `--fail`) mi
 Mit `--auth`: identische Wege. Python schickt die Zugangsdaten aus der Proxy-URL gleich mit (0× 407 an Proxy A),
 Chromium bekommt beim ersten Request an Proxy B einmal 407 und authentifiziert sich dann mit `username`/`password`.
 
+`htvars.txt` (`rcc ht vars` mit derselben Umgebung wie der Test) enthält die Proxy-Variablen nur in den
+`profile`-Läufen, in den `env`-Läufen nicht, obwohl sie dort im Test ankommen (siehe Erkenntnis 5).
+
 Die Logs zeigen z. B. für Szenario 2:
 
 ```text
@@ -116,25 +128,22 @@ Proxy A:  http://example.com/?via=python-urllib
 Proxy B:  http://example.com/  http://example.com/s.js  https://example.org/  https://example.org/s.js
 ```
 
-## Ergebnisse Windows (Windows Server 2022, rcc v17.29.1, kein System-Proxy aktiv)
+### Windows mit System-Proxy (`windows-profile-sysproxy`)
 
-`run_scenarios.ps1` als Administrator. Laut Zusammenfassung: WinINET (HKCU) `ProxyEnable=0`, kein `ProxyServer`,
-keine `AutoConfigURL`; WinHTTP `Direct access`. Ergebnisse unter `results/windows-*`.
+WinINET (HKCU): `ProxyEnable=1`, `ProxyServer=localhost:3128`, Ausnahme `<local>`.
 
-| Lauf | Szenarien | Ergebnis |
-|---|---|---|
-| `windows-rcc-auth` (`-Rcc -Auth -Fail`) | 1–5 | 5 von 5 PASS |
-| `windows-env` (`-Fail`) | 2–5 | PASS |
-| `windows-env` | 1 | kein gültiges Ergebnis (siehe unten) |
+| # | Proxy A (Profil) | `New Browser` | Python-Request | Browser-Traffic |
+|---|---|---|---|---|
+| 1 | ja | ohne `proxy` | Proxy A | **direkt** |
+| 2 | ja | Proxy B | Proxy A | Proxy B |
+| 3 | nein | ohne `proxy` | **Proxy A** (Registry) | **direkt** |
+| 4 | nein | Proxy B | **Proxy A** (Registry) | Proxy B |
+| 5 | ja, ohne `NO_PROXY` | ohne `proxy` | Proxy A | **direkt** |
 
-Die Wege sind dieselben wie unter macOS: Der Python-Request geht über Proxy A, der Browser ohne `proxy=` direkt
-und mit `proxy=` über Proxy B. Szenario 5 läuft ohne `NO_PROXY` durch. Auch die Authentifizierung verhält sich
-gleich: 0× 407 an Proxy A, 1× 407 an Proxy B, danach meldet sich Chromium mit `username`/`password` an.
-
-Szenario 1 im Lauf `windows-env` wurde nach 5 s abgebrochen. Damals band PowerShell bei `-Fail 5` die `5` an
-`-Timeout`; das ist inzwischen behoben (`PositionalBinding = $false`). Bis zu diesem Abbruch ging der Python-Request
-über Proxy A. Den Weg des Browsers in Szenario 1 belegt der Lauf `windows-rcc-auth`. Ein vollständiger
-`windows-env`-Lauf und die Läufe `windows-rcc` und `windows-env-auth` stehen noch aus.
+Der System-Proxy war wirksam: Python ging in Szenario 3 und 4 ohne Profil und ohne Variablen über Proxy A, und im
+Log von Proxy A erscheint auch Traffic anderer Programme des Benutzers (VS Code). Chromium (`headless=True`) ging
+trotzdem direkt. Playwright setzt ohne `proxy=` kein Proxy-Flag; warum Chromium den WinINET-Proxy nicht nutzt,
+ist nicht geklärt (Vermutung: headless shell, nicht geprüft).
 
 ## Erkenntnisse
 
@@ -143,9 +152,9 @@ Szenario 1 im Lauf `windows-env` wurde nach 5 s abgebrochen. Damals band PowerSh
    Das RCC-Profil wirkt ausschließlich über diese Variablen: Mit denselben Variablen ohne rcc ist das Verhalten
    identisch (`results/env` = `results/profile`).
 2. **Der Browser ignoriert diese Variablen.** Playwright gibt Chromium nur dann `--proxy-server=…` mit,
-   wenn `New Browser` einen `proxy` bekommt. Ohne `proxy` verwendet Chromium die
-   **System-Proxy-Einstellungen des Betriebssystems**, nicht die Env-Variablen.
-3. **`proxy` in `New Browser` hat immer Vorrang**, egal was im RCC-Profil steht (Szenario 2 = Szenario 4).
+   wenn `New Browser` einen `proxy` bekommt. Ohne `proxy` ging Chromium in allen Messungen direkt, unter
+   Windows auch bei gesetztem WinINET-Proxy (gemessen mit `headless=True`).
+3. **`proxy` in `New Browser` hat immer Vorrang**, egal was im RCC-Profil oder im System steht (Szenario 2 = Szenario 4).
    Zugangsdaten gehören dort in `username`/`password`.
 4. Der RCC-Proxy wirkt beim Browser nur indirekt: beim **Bauen des Environments** (conda/pip-Downloads,
    `rfbrowser init` lädt Node-Pakete und Browser-Binaries über den Proxy).
@@ -180,15 +189,9 @@ mindestens `localhost,127.0.0.1` pflegen.
 
 ## Einschränkung / Plattformunterschiede
 
-Ohne `proxy`-Argument folgt Chromium dem System:
-
-- **Windows** (typischer Robotmk-Host): WinINET-Proxyeinstellungen des ausführenden Benutzers.
-  Ist dort ein Proxy (oder PAC/WPAD) konfiguriert, geht der Browser darüber, unabhängig von RCC.
-  Läuft der Scheduler als SYSTEM, gelten dessen Einstellungen. Python-`urllib` liest unter Windows ohne
-  Env-Variablen ebenfalls die Registry-Einstellungen.
-- **Linux** ohne Desktop-Umgebung: Chromium liest `http_proxy`/`https_proxy` aus der Umgebung. Dort *könnte*
-  der RCC-Proxy also auch ohne `proxy`-Argument greifen. Das ist ein weiterer Grund, `proxy` explizit zu setzen.
-
-Unter macOS und Windows wurde jeweils **ohne** System-Proxy gemessen; dort geht der Browser ohne `proxy=` direkt.
-Noch nicht gemessen: ein Windows-Host mit gesetztem WinINET-Proxy oder PAC-Datei und ein Scheduler, der als SYSTEM
-läuft.
+- Gemessen als normaler Benutzer bzw. Administrator, nicht als SYSTEM. WinINET-Einstellungen gelten pro Benutzer;
+  läuft der Robotmk-Scheduler als SYSTEM, gelten dessen Einstellungen (für Python relevant, siehe oben).
+- Der System-Proxy-Lauf nutzt `headless=True`. Ob ein sichtbarer Browser (`headless=False`) oder `channel=chrome`
+  dem WinINET-Proxy folgt, ist nicht gemessen. PAC-Dateien ebenfalls nicht.
+- **Linux** ohne Desktop-Umgebung: Chromium liest dort möglicherweise `http_proxy`/`https_proxy` aus der Umgebung.
+  Nicht gemessen; ein weiterer Grund, `proxy` explizit zu setzen.
