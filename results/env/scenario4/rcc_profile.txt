@@ -1,15 +1,15 @@
 Available profiles:
+- proxytest-a-auth-nonoproxy: RCC-Proxyprofil -> mitmproxy A (localhost:3128)
+- RCCTestProfile: RCC proxy profile
+- mitmproxy: RCC proxy profile
 - MyProxy2: RCC proxy profile
 - MyProxy4: RCC proxy profile
 - proxyA: RCC proxy profile -> mitmproxy A (localhost:3128)
-- proxytest-a-auth-nonoproxy: RCC-Proxyprofil -> mitmproxy A (localhost:3128), erzeugt von run_scenarios.sh
-- proxytest-a: RCC-Proxyprofil -> mitmproxy A (localhost:3128)
 - test: mit root ca
-- mitmproxy: RCC proxy profile
+- MyProxy3: RCC proxy profile
 - proxytest-a-auth: RCC-Proxyprofil -> mitmproxy A (localhost:3128)
 - proxytest-a-nonoproxy: RCC-Proxyprofil -> mitmproxy A (localhost:3128)
-- RCCTestProfile: RCC proxy profile
-- MyProxy3: RCC proxy profile
+- proxytest-a: RCC-Proxyprofil -> mitmproxy A (localhost:3128)
 
 Currently active profile is: default
 OK.

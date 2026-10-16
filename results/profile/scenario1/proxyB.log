@@ -1,4 +1,4 @@
-[10:19:47.055] HTTP(S) proxy listening at *:8080.
-[10:19:47.510][172.17.0.1:50238] client connect
-172.17.0.1:50238: GET http://mitm.it/
+[20:49:44.655] HTTP(S) proxy listening at *:8080.
+[20:49:45.394][172.17.0.1:56842] client connect
+172.17.0.1:56842: GET http://mitm.it/
                << 200 OK 17.5k

@@ -2,6 +2,7 @@
 Documentation    Welcher Proxy wird vom Browser genutzt?
 ...              Die Browser-Konfiguration kommt aus ${BROWSER_RESOURCE} (per -v gesetzt).
 Library          OperatingSystem
+Library          RequestsLibrary
 Resource         ${BROWSER_RESOURCE}
 
 Suite Teardown    Close Browser    ALL
@@ -21,10 +22,9 @@ Proxy Environment Variables
     END
 
 Python Request (Kontrolle)
-    [Documentation]    Positivkontrolle: Python (urllib) wertet HTTP(S)_PROXY aus.
+    [Documentation]    Positivkontrolle: RequestsLibrary (requests) wertet HTTP(S)_PROXY aus.
     ...    Taucht dieser Request in Proxy A auf, ist das RCC-Proxyprofil im Prozess wirksam.
-    ${status}=    Evaluate    urllib.request.urlopen("http://example.com/?via=python-urllib").status    modules=urllib.request
-    Should Be Equal As Integers    ${status}    200
+    GET    url=http://example.com/?via=python-requests    expected_status=200
 
 Open HTTP And HTTPS Page
     Open Scenario Browser

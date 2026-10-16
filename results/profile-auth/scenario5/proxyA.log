@@ -1,9 +1,4 @@
-[10:28:45.012] HTTP(S) proxy listening at *:8080.
-[10:28:45.652][172.17.0.1:57306] client connect
-172.17.0.1:57306: GET http://mitm.it/
+[20:55:36.488] HTTP(S) proxy listening at *:8080.
+[20:55:37.253][172.17.0.1:49694] client connect
+172.17.0.1:49694: GET http://mitm.it/
                << 200 OK 17.5k
-[10:28:45.944][172.17.0.1:57306] client disconnect
-[10:29:08.475][172.17.0.1:40458] client connect
-[10:29:08.613][172.17.0.1:40458] server connect example.com:80 (104.20.23.154:80)
-172.17.0.1:40458: GET http://example.com/?via=python-urllib
-               << 200 OK 577b

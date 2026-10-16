@@ -9,12 +9,14 @@ https_proxy=<nicht gesetzt>
 no_proxy=<nicht gesetzt>
 | PASS |
 ------------------------------------------------------------------------------
-Python Request (Kontrolle) :: Positivkontrolle: Python (urllib) we... | PASS |
+Python Request (Kontrolle) :: Positivkontrolle: RequestsLibrary (r... [ WARN ] You might have an = symbol in url. You better place 'url=' before, example: 'url=/your-url/foo?param=a' or use '/your-url/foo  params=param=a' or escape it
+| FAIL |
+TypeError: RequestsKeywords.session_less_get() missing 1 required positional argument: 'url'
 ------------------------------------------------------------------------------
 Open HTTP And HTTPS Page                                              | PASS |
 ------------------------------------------------------------------------------
-Proxy :: Welcher Proxy wird vom Browser genutzt? Die Browser-Konfi... | PASS |
-3 tests, 3 passed, 0 failed
+Proxy :: Welcher Proxy wird vom Browser genutzt? Die Browser-Konfi... | FAIL |
+3 tests, 2 passed, 1 failed
 ==============================================================================
 Output:  /Users/simon/Documents/01_Development/06_Minimalbeispiele/rf-web-proxytest/results/env/scenario3/output.xml
 Log:     /Users/simon/Documents/01_Development/06_Minimalbeispiele/rf-web-proxytest/results/env/scenario3/log.html
