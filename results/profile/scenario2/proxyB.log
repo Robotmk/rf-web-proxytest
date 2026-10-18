@@ -1,22 +1,22 @@
-[20:50:46.461] HTTP(S) proxy listening at *:8080.
-[20:50:47.149][172.17.0.1:56724] client connect
-172.17.0.1:56724: GET http://mitm.it/
+[21:03:47.077] HTTP(S) proxy listening at *:8080.
+[21:03:47.555][172.17.0.1:36292] client connect
+172.17.0.1:36292: GET http://mitm.it/
                << 200 OK 17.5k
-[20:50:47.373][172.17.0.1:56724] client disconnect
-[20:50:57.601][172.17.0.1:35398] client connect
-[20:50:57.668][172.17.0.1:35398] server connect example.com:80 (172.66.147.243:80)
-172.17.0.1:35398: GET http://example.com/
+[21:03:47.783][172.17.0.1:36292] client disconnect
+[21:03:58.613][172.17.0.1:41912] client connect
+[21:03:58.674][172.17.0.1:41912] server connect example.com:80 (172.66.147.243:80)
+172.17.0.1:41912: GET http://example.com/
                << 200 OK 400b
-172.17.0.1:35398: GET http://example.com/s.js
+172.17.0.1:41912: GET http://example.com/s.js
                << 200 OK 1.3k
-[20:50:57.925][172.17.0.1:35406] client connect
-[20:50:57.974][172.17.0.1:35406] server connect example.org:443 (104.20.26.136:443)
-[20:50:58.315][172.17.0.1:35418] client connect
-[20:50:58.321][172.17.0.1:35406] Client TLS handshake failed. The client does not trust the proxy's certificate for example.org (OpenSSL Error([('SSL routines', '', 'tls alert certificate unknown')]))
-[20:50:58.330][172.17.0.1:35406] client disconnect
-[20:50:58.343][172.17.0.1:35406] server disconnect example.org:443 (104.20.26.136:443)
-[20:50:58.374][172.17.0.1:35418] server connect example.org:443 (104.20.26.136:443)
-172.17.0.1:35418: GET https://example.org/ HTTP/2.0
+[21:03:58.877][172.17.0.1:41924] client connect
+[21:03:59.021][172.17.0.1:41924] server connect example.org:443 (104.20.26.136:443)
+[21:03:59.330][172.17.0.1:41926] client connect
+[21:03:59.338][172.17.0.1:41924] Client TLS handshake failed. The client does not trust the proxy's certificate for example.org (OpenSSL Error([('SSL routines', '', 'tls alert certificate unknown')]))
+[21:03:59.349][172.17.0.1:41924] client disconnect
+[21:03:59.363][172.17.0.1:41924] server disconnect example.org:443 (104.20.26.136:443)
+[21:03:59.390][172.17.0.1:41926] server connect example.org:443 (104.20.26.136:443)
+172.17.0.1:41926: GET https://example.org/ HTTP/2.0
       << HTTP/2.0 200 OK 334b
-172.17.0.1:35418: GET https://example.org/s.js HTTP/2.0
+172.17.0.1:41926: GET https://example.org/s.js HTTP/2.0
       << HTTP/2.0 200 OK 1.3k

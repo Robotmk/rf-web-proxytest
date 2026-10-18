@@ -9,14 +9,12 @@ https_proxy=http://proxyuser:s3cr3t@localhost:3128
 no_proxy=localhost,127.0.0.1
 | PASS |
 ------------------------------------------------------------------------------
-Python Request (Kontrolle) :: Positivkontrolle: RequestsLibrary (r... [ WARN ] You might have an = symbol in url. You better place 'url=' before, example: 'url=/your-url/foo?param=a' or use '/your-url/foo  params=param=a' or escape it
-| FAIL |
-TypeError: RequestsKeywords.session_less_get() missing 1 required positional argument: 'url'
+Python Request (Kontrolle) :: Positivkontrolle: RequestsLibrary (r... | PASS |
 ------------------------------------------------------------------------------
 Open HTTP And HTTPS Page                                              | PASS |
 ------------------------------------------------------------------------------
-Proxy :: Welcher Proxy wird vom Browser genutzt? Die Browser-Konfi... | FAIL |
-3 tests, 2 passed, 1 failed
+Proxy :: Welcher Proxy wird vom Browser genutzt? Die Browser-Konfi... | PASS |
+3 tests, 3 passed, 0 failed
 ==============================================================================
 Output:  /Users/simon/Documents/01_Development/06_Minimalbeispiele/rf-web-proxytest/results/env-auth/scenario2/output.xml
 Log:     /Users/simon/Documents/01_Development/06_Minimalbeispiele/rf-web-proxytest/results/env-auth/scenario2/log.html

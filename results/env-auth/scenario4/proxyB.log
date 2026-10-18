@@ -1,24 +1,24 @@
-[21:01:27.791] HTTP(S) proxy listening at *:8080.
-[21:01:28.554][172.17.0.1:37540] client connect
-172.17.0.1:37540: GET http://mitm.it/
+[21:15:18.694] HTTP(S) proxy listening at *:8080.
+[21:15:19.162][172.17.0.1:48078] client connect
+172.17.0.1:48078: GET http://mitm.it/
                << 200 OK 17.5k
-[21:01:28.788][172.17.0.1:37540] client disconnect
-[21:01:39.064][172.17.0.1:55882] client connect
-172.17.0.1:55882: GET http://example.com/
+[21:15:19.378][172.17.0.1:48078] client disconnect
+[21:15:30.064][172.17.0.1:55520] client connect
+172.17.0.1:55520: GET http://example.com/
                << 407 Proxy Authentication Required 129b
-[21:01:39.193][172.17.0.1:55882] server connect example.com:80 (172.66.147.243:80)
-172.17.0.1:55882: GET http://example.com/
+[21:15:30.173][172.17.0.1:55520] server connect example.com:80 (172.66.147.243:80)
+172.17.0.1:55520: GET http://example.com/
                << 200 OK 400b
-172.17.0.1:55882: GET http://example.com/s.js
+172.17.0.1:55520: GET http://example.com/s.js
                << 200 OK 1.3k
-[21:01:39.357][172.17.0.1:55896] client connect
-[21:01:39.403][172.17.0.1:55896] server connect example.org:443 (104.20.26.136:443)
-[21:01:39.670][172.17.0.1:55904] client connect
-[21:01:39.676][172.17.0.1:55896] Client TLS handshake failed. The client does not trust the proxy's certificate for example.org (OpenSSL Error([('SSL routines', '', 'tls alert certificate unknown')]))
-[21:01:39.685][172.17.0.1:55896] client disconnect
-[21:01:39.698][172.17.0.1:55896] server disconnect example.org:443 (104.20.26.136:443)
-[21:01:39.724][172.17.0.1:55904] server connect example.org:443 (104.20.26.136:443)
-172.17.0.1:55904: GET https://example.org/ HTTP/2.0
+[21:15:30.371][172.17.0.1:55534] client connect
+[21:15:30.416][172.17.0.1:55534] server connect example.org:443 (104.20.26.136:443)
+[21:15:30.681][172.17.0.1:55544] client connect
+[21:15:30.688][172.17.0.1:55534] Client TLS handshake failed. The client does not trust the proxy's certificate for example.org (OpenSSL Error([('SSL routines', '', 'tls alert certificate unknown')]))
+[21:15:30.699][172.17.0.1:55534] client disconnect
+[21:15:30.713][172.17.0.1:55534] server disconnect example.org:443 (104.20.26.136:443)
+[21:15:30.744][172.17.0.1:55544] server connect example.org:443 (104.20.26.136:443)
+172.17.0.1:55544: GET https://example.org/ HTTP/2.0
       << HTTP/2.0 200 OK 334b
-172.17.0.1:55904: GET https://example.org/s.js HTTP/2.0
+172.17.0.1:55544: GET https://example.org/s.js HTTP/2.0
       << HTTP/2.0 200 OK 1.3k

@@ -14,7 +14,7 @@ durch den die interne gRPC-Kommunikation ohne `NO_PROXY=localhost` nicht mehr fu
 |---|---|
 | Proxy A | `mitmdump` auf `localhost:3128`, wird per RCC-Profil bzw. `HTTP(S)_PROXY` gesetzt |
 | Proxy B | `mitmdump` auf `localhost:3129`, wird nur explizit in `New Browser … proxy=` gesetzt |
-| `proxy.robot` | loggt die Proxy-Variablen, macht einen Python-Kontrollrequest (urllib) und öffnet `http://example.com` + `https://example.org` im Browser |
+| `proxy.robot` | loggt die Proxy-Variablen, macht einen Python-Kontrollrequest (RequestsLibrary `GET`) und öffnet `http://example.com` + `https://example.org` im Browser |
 | `resources/browser_noproxy.resource` | `New Browser` ohne `proxy` |
 | `resources/browser_proxyB.resource` | `New Browser` mit `proxy={"server": "http://localhost:3129", "bypass": "localhost,127.0.0.1"}`, bei `${PROXY_USER}` zusätzlich `username`/`password` |
 | `robot.yaml` / `conda.yaml` | Browser Library 20.6.0 |
@@ -124,7 +124,7 @@ Chromium bekommt beim ersten Request an Proxy B einmal 407 und authentifiziert s
 Die Logs zeigen z. B. für Szenario 2:
 
 ```text
-Proxy A:  http://example.com/?via=python-urllib
+Proxy A:  http://example.com/?via=python-requests
 Proxy B:  http://example.com/  http://example.com/s.js  https://example.org/  https://example.org/s.js
 ```
 
@@ -148,7 +148,7 @@ ist nicht geklärt (Vermutung: headless shell, nicht geprüft).
 ## Erkenntnisse
 
 1. **RCC setzt `HTTP_PROXY`/`HTTPS_PROXY`/`NO_PROXY` (groß und klein) in die Umgebung des Robot-Prozesses.**
-   Python (requests, urllib, RequestsLibrary …) nutzt den RCC-Proxy daher automatisch (Kontrollrequest in A).
+   Python (requests bzw. RequestsLibrary) nutzt den RCC-Proxy daher automatisch (Kontrollrequest in A).
    Das RCC-Profil wirkt ausschließlich über diese Variablen: Mit denselben Variablen ohne rcc ist das Verhalten
    identisch (`results/env` = `results/profile`).
 2. **Der Browser ignoriert diese Variablen.** Playwright gibt Chromium nur dann `--proxy-server=…` mit,
