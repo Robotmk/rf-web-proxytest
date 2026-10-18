@@ -1,7 +1,7 @@
 Note! For now, resolved effective environment configuration file is "C:\\Users\\Administrator\\Documents\\rf-web-proxytest\\conda.yaml".
-####  Progress: 00/15  v17.29.1     0.033s  Context: "WIN-933S13L1CLM\\Administrator" <WIN-933S13L1CLM\Administrator@WIN-933S13L1CLM> [windows_amd64/Microsoft Windows [Version 10.0.20348.587]].
-####  Progress: 01/15  v17.29.1     0.002s  Fresh [private mode] holotree environment 0a9cb5dc-9fac-e612-e48e-7740ca3c3694. (parent/pid: 6684/6896)
-####  Progress: 02/15  v17.29.1     0.002s  Holotree blueprint is "57ba9d71a2d390fd" [windows_amd64 with 3 workers on 4 CPUs from "57ba9d71a2d390fd"].
+####  Progress: 00/15  v17.29.1     0.040s  Context: "WIN-933S13L1CLM\\Administrator" <WIN-933S13L1CLM\Administrator@WIN-933S13L1CLM> [windows_amd64/Microsoft Windows [Version 10.0.20348.587]].
+####  Progress: 01/15  v17.29.1     0.003s  Fresh [private mode] holotree environment 0a9cb5dc-9fac-e612-e48e-7740ca3c3694. (parent/pid: 2288/1068)
+####  Progress: 02/15  v17.29.1     0.005s  Holotree blueprint is "57ba9d71a2d390fd" [windows_amd64 with 3 workers on 4 CPUs from "57ba9d71a2d390fd"].
 FINAL unified conda environment descriptor:
 ---
 channels:
@@ -17,18 +17,18 @@ dependencies:
 rccPostInstall:
 - rfbrowser init
 ---
-####  Progress: 14/15  v17.29.1     0.166s  Restore space from library [with 3 workers on 4 CPUs; with compression: true].
+####  Progress: 14/15  v17.29.1     0.347s  Restore space from library [with 3 workers on 4 CPUs; with compression: true].
 Installation plan is: C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\rcc_plan.log
 Environment configuration descriptor is: C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\identity.yaml
-####  Progress: 15/15  v17.29.1     0.334s  Fresh holotree done [with 3 workers on 4 CPUs].
+####  Progress: 15/15  v17.29.1     0.590s  Fresh holotree done [with 3 workers on 4 CPUs].
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@  From rcc "v17.29.1" (controller: "user") point of view, "environment creation" was SUCCESS. @@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 SET PYTHON_EXE=C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\python.exe
 SET PYTHONDONTWRITEBYTECODE=x
-SET PYTHONPYCACHEPREFIX=C:\Users\Administrator\AppData\Local\robocorp\temp\423594015f86c7fc
-SET TEMP=C:\Users\Administrator\AppData\Local\robocorp\temp\423594015f86c7fc
-SET TMP=C:\Users\Administrator\AppData\Local\robocorp\temp\423594015f86c7fc
+SET PYTHONPYCACHEPREFIX=C:\Users\Administrator\AppData\Local\robocorp\temp\723a696df1fcdea1
+SET TEMP=C:\Users\Administrator\AppData\Local\robocorp\temp\723a696df1fcdea1
+SET TMP=C:\Users\Administrator\AppData\Local\robocorp\temp\723a696df1fcdea1
 SET CONDA_DEFAULT_ENV=rcc
 SET CONDA_PREFIX=C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2
 SET CONDA_PROMPT_MODIFIER=(rcc) 
@@ -44,12 +44,12 @@ SET RCC_HOLOTREE_SPACE_ROOT=C:\Users\Administrator\AppData\Local\robocorp\holotr
 SET RCC_TRACKING_ALLOWED=false
 SET RCC_EXE=C:\Users\Administrator\bin\rcc.exe
 SET RCC_VERSION=v17.29.1
-SET PATH=C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\Library\mingw-w64\bin;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\Library\usr\bin;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\Library\bin;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\Scripts;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files\Git\cmd;C:\Users\Administrator\AppData\Local\Microsoft\WindowsApps;C:\Users\Administrator\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\Administrator\bin;C:\Users\Administrator\Documents\rf-web-proxytest
+SET PATH=C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\Library\mingw-w64\bin;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\Library\usr\bin;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\Library\bin;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\Scripts;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files\Git\cmd;C:\Users\Administrator\AppData\Local\Microsoft\WindowsApps;C:\Users\Administrator\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\Administrator\bin;C:\Users\Administrator\Documents\rf-web-proxytest;c:\Users\Administrator\.vscode\extensions\d-biehl.robotcode-2.7.0\bundled\scripts
+SET __CONDA_OPENSSL_CERT_DIR_SET=1
+SET __CONDA_OPENSSL_CERT_FILE_SET=1
 SET MAMBA_ROOT_PREFIX=C:\Users\Administrator\AppData\Local\robocorp
 SET SSL_CERT_DIR=C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\Library\ssl\certs
 SET SSL_CERT_FILE=C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\Library\ssl\cacert.pem
-SET __CONDA_OPENSSL_CERT_DIR_SET=1
-SET __CONDA_OPENSSL_CERT_FILE_SET=1
 SET MAMBA_SSL_VERIFY=false
 SET RC_DISABLE_SSL=true
 SET WDM_SSL_VERIFY=0
@@ -60,7 +60,7 @@ SET http_proxy=http://localhost:3128
 SET HTTP_PROXY=http://localhost:3128
 SET no_proxy=localhost,127.0.0.1
 SET NO_PROXY=localhost,127.0.0.1
-SET PATH=C:\Users\Administrator\Documents\rf-web-proxytest;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\Library\mingw-w64\bin;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\Library\usr\bin;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\Library\bin;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\Scripts;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files\Git\cmd;C:\Users\Administrator\AppData\Local\Microsoft\WindowsApps;C:\Users\Administrator\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\Administrator\bin;C:\Users\Administrator\Documents\rf-web-proxytest
+SET PATH=C:\Users\Administrator\Documents\rf-web-proxytest;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\Library\mingw-w64\bin;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\Library\usr\bin;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\Library\bin;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\Scripts;C:\Users\Administrator\AppData\Local\robocorp\holotree\62521b0_5a1fac3_0f0ceab2\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files\Git\cmd;C:\Users\Administrator\AppData\Local\Microsoft\WindowsApps;C:\Users\Administrator\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\Administrator\bin;C:\Users\Administrator\Documents\rf-web-proxytest;c:\Users\Administrator\.vscode\extensions\d-biehl.robotcode-2.7.0\bundled\scripts
 SET PYTHONPATH=C:\Users\Administrator\Documents\rf-web-proxytest
 SET ROBOT_ROOT=C:\Users\Administrator\Documents\rf-web-proxytest
 SET ROBOT_ARTIFACTS=C:\Users\Administrator\Documents\rf-web-proxytest\output
