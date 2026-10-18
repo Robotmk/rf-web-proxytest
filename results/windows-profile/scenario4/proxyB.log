@@ -1,25 +1,25 @@
-[12:22:36.380] Loading script C:\Users\Administrator\Documents\rf-web-proxytest\mitmproxy\block_loopback.py
-[12:22:36.381] HTTP(S) proxy listening at 127.0.0.1:3129.
-[12:22:36.700][127.0.0.1:50505] client connect
-[12:22:36.700][127.0.0.1:50505] client disconnect
-[12:22:40.931][127.0.0.1:50513] client connect
-[12:22:40.943][127.0.0.1:50513] server connect example.com:80 ([2606:4700:10::6814:179a]:80)
-127.0.0.1:50513: GET http://example.com/
+[11:24:13.435] Loading script C:\Users\Administrator\Documents\rf-web-proxytest\mitmproxy\block_loopback.py
+[11:24:13.436] HTTP(S) proxy listening at 127.0.0.1:3129.
+[11:24:13.924][127.0.0.1:57025] client connect
+[11:24:13.925][127.0.0.1:57025] client disconnect
+[11:24:18.238][127.0.0.1:57034] client connect
+[11:24:18.251][127.0.0.1:57034] server connect example.com:80 ([2606:4700:10::6814:179a]:80)
+127.0.0.1:57034: GET http://example.com/
               << 200 OK 400b
-127.0.0.1:50513: GET http://example.com/s.js
+127.0.0.1:57034: GET http://example.com/s.js
               << 200 OK 1.3k
-[12:22:41.009][127.0.0.1:50516] client connect
-[12:22:41.014][127.0.0.1:50516] server connect example.org:443 ([2606:4700:10::ac42:9ded]:443)
-[12:22:41.047][127.0.0.1:50516] Client TLS handshake failed. The client does not trust the proxy's certificate for example.org (OpenSSL Error([('SSL routines', '', 'ssl/tls alert certificate unknown')]))
-[12:22:41.050][127.0.0.1:50519] client connect
-[12:22:41.050][127.0.0.1:50516] client disconnect
-[12:22:41.051][127.0.0.1:50516] server disconnect example.org:443 ([2606:4700:10::ac42:9ded]:443)
-[12:22:41.055][127.0.0.1:50519] server connect example.org:443 ([2606:4700:10::ac42:9ded]:443)
-127.0.0.1:50519: GET https://example.org/ HTTP/2.0
+[11:24:18.328][127.0.0.1:57037] client connect
+[11:24:18.335][127.0.0.1:57037] server connect example.org:443 ([2606:4700:10::6814:1a88]:443)
+[11:24:18.370][127.0.0.1:57037] Client TLS handshake failed. The client does not trust the proxy's certificate for example.org (OpenSSL Error([('SSL routines', '', 'ssl/tls alert certificate unknown')]))
+[11:24:18.370][127.0.0.1:57040] client connect
+[11:24:18.370][127.0.0.1:57037] client disconnect
+[11:24:18.370][127.0.0.1:57037] server disconnect example.org:443 ([2606:4700:10::6814:1a88]:443)
+[11:24:18.381][127.0.0.1:57040] server connect example.org:443 ([2606:4700:10::6814:1a88]:443)
+127.0.0.1:57040: GET https://example.org/ HTTP/2.0
      << HTTP/2.0 200 OK 334b
-127.0.0.1:50519: GET https://example.org/s.js HTTP/2.0
+127.0.0.1:57040: GET https://example.org/s.js HTTP/2.0
      << HTTP/2.0 200 OK 1.3k
-[12:22:41.191][127.0.0.1:50519] client disconnect
-[12:22:41.191][127.0.0.1:50519] server disconnect example.org:443 ([2606:4700:10::ac42:9ded]:443)
-[12:22:41.191][127.0.0.1:50513] client disconnect
-[12:22:41.194][127.0.0.1:50513] server disconnect example.com:80 ([2606:4700:10::6814:179a]:80)
+[11:24:18.572][127.0.0.1:57040] client disconnect
+[11:24:18.572][127.0.0.1:57040] server disconnect example.org:443 ([2606:4700:10::6814:1a88]:443)
+[11:24:18.572][127.0.0.1:57034] client disconnect
+[11:24:18.572][127.0.0.1:57034] server disconnect example.com:80 ([2606:4700:10::6814:179a]:80)

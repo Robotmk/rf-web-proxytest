@@ -1,9 +1,9 @@
 ﻿Available profiles:
-- MyProxy: RCC proxy profile
-- proxytest-a-auth-nonoproxy: RCC-Proxyprofil -> mitmproxy A (localhost:3128)
 - proxytest-a-auth: RCC-Proxyprofil -> mitmproxy A (localhost:3128)
 - proxytest-a-nonoproxy: RCC-Proxyprofil -> mitmproxy A (localhost:3128)
 - proxytest-a: RCC-Proxyprofil -> mitmproxy A (localhost:3128)
+- MyProxy: RCC proxy profile
+- proxytest-a-auth-nonoproxy: RCC-Proxyprofil -> mitmproxy A (localhost:3128)
 
 Currently active profile is: default
 OK.

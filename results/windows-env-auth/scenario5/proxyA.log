@@ -1,10 +1,10 @@
-[12:26:06.860] Loading script C:\Users\Administrator\Documents\rf-web-proxytest\mitmproxy\block_loopback.py
-[12:26:06.861] HTTP(S) proxy listening at 127.0.0.1:3128.
-[12:26:07.301][127.0.0.1:50829] client connect
-[12:26:07.302][127.0.0.1:50829] client disconnect
-[12:26:16.523][127.0.0.1:50841] client connect
-[12:26:16.534][127.0.0.1:50841] server connect example.com:80 ([2606:4700:10::6814:179a]:80)
-127.0.0.1:50841: GET http://example.com/?via=python-urllib
-              << 200 OK 577b
-[12:26:16.547][127.0.0.1:50841] server disconnect example.com:80 ([2606:4700:10::6814:179a]:80)
-[12:26:16.547][127.0.0.1:50841] client disconnect
+[11:18:36.525] Loading script C:\Users\Administrator\Documents\rf-web-proxytest\mitmproxy\block_loopback.py
+[11:18:36.525] HTTP(S) proxy listening at 127.0.0.1:3128.
+[11:18:36.788][127.0.0.1:56916] client connect
+[11:18:36.789][127.0.0.1:56916] client disconnect
+[11:18:45.586][127.0.0.1:56928] client connect
+[11:18:45.588][127.0.0.1:56928] server connect example.com:80 ([2606:4700:10::ac42:93f3]:80)
+127.0.0.1:56928: GET http://example.com/?via=python-requests
+              << 200 OK 400b
+[11:18:46.070][127.0.0.1:56928] client disconnect
+[11:18:46.071][127.0.0.1:56928] server disconnect example.com:80 ([2606:4700:10::ac42:93f3]:80)

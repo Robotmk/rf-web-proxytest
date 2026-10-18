@@ -9,7 +9,7 @@ https_proxy=<nicht gesetzt>
 no_proxy=<nicht gesetzt>
 | PASS |
 ------------------------------------------------------------------------------
-Python Request (Kontrolle) :: Positivkontrolle: Python (urllib) we... | PASS |
+Python Request (Kontrolle) :: Positivkontrolle: RequestsLibrary (r... | PASS |
 ------------------------------------------------------------------------------
 Open HTTP And HTTPS Page                                              | PASS |
 ------------------------------------------------------------------------------
