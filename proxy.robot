@@ -1,15 +1,14 @@
 *** Settings ***
-Documentation    Welcher Proxy wird vom Browser genutzt?
-...              Die Browser-Konfiguration kommt aus ${BROWSER_RESOURCE} (per -v gesetzt).
+Documentation    Welchen Proxy nutzen RequestsLibrary und Browser Library?
+...              Proxy-Konfiguration von Browser und RequestsLibrary kommt aus ${SCENARIO_RESOURCE} (per -v gesetzt).
 Library          OperatingSystem
-Library          RequestsLibrary
-Resource         ${BROWSER_RESOURCE}
+Resource         ${SCENARIO_RESOURCE}
 
 Suite Teardown    Close Browser    ALL
 
 
 *** Variables ***
-${BROWSER_RESOURCE}    resources/browser_noproxy.resource
+${SCENARIO_RESOURCE}    resources/noproxy.resource
 
 
 *** Test Cases ***
@@ -21,10 +20,10 @@ Proxy Environment Variables
         Log    ${name}=${value}
     END
 
-Python Request (Kontrolle)
-    [Documentation]    Positivkontrolle: RequestsLibrary (requests) wertet HTTP(S)_PROXY aus.
-    ...    Taucht dieser Request in Proxy A auf, ist das RCC-Proxyprofil im Prozess wirksam.
-    GET    url=http://example.com/?via=python-requests    expected_status=200
+Python Request
+    [Documentation]    RequestsLibrary: ohne proxies= wertet requests HTTP(S)_PROXY/NO_PROXY aus,
+    ...    mit proxies= (${SCENARIO_RESOURCE}) gilt der explizite Proxy.
+    Scenario GET    http://example.com/?via=python-requests
 
 Open HTTP And HTTPS Page
     Open Scenario Browser

@@ -13,10 +13,10 @@ durch den die interne gRPC-Kommunikation ohne `NO_PROXY=localhost` nicht mehr fu
 | Komponente | Beschreibung |
 |---|---|
 | Proxy A | `mitmdump` auf `localhost:3128`, wird per RCC-Profil bzw. `HTTP(S)_PROXY` gesetzt |
-| Proxy B | `mitmdump` auf `localhost:3129`, wird nur explizit in `New Browser … proxy=` gesetzt |
+| Proxy B | `mitmdump` auf `localhost:3129`, wird nur explizit im Test gesetzt: `New Browser … proxy=` und RequestsLibrary `GET … proxies=` |
 | `proxy.robot` | loggt die Proxy-Variablen, macht einen Python-Kontrollrequest (RequestsLibrary `GET`) und öffnet `http://example.com` + `https://example.org` im Browser |
-| `resources/browser_noproxy.resource` | `New Browser` ohne `proxy` |
-| `resources/browser_proxyB.resource` | `New Browser` mit `proxy={"server": "http://localhost:3129", "bypass": "localhost,127.0.0.1"}`, bei `${PROXY_USER}` zusätzlich `username`/`password` |
+| `resources/noproxy.resource` | `New Browser` ohne `proxy`, `GET` ohne `proxies` |
+| `resources/proxyB.resource` | `New Browser` mit `proxy={"server": "http://localhost:3129", "bypass": "localhost,127.0.0.1"}`, bei `${PROXY_USER}` zusätzlich `username`/`password`; `GET` mit `proxies={"http": …, "https": …}` auf Proxy B, bei `${PROXY_USER}` mit Zugangsdaten in der URL |
 | `robot.yaml` / `conda.yaml` | Browser Library 20.6.0 |
 | `profiles/` | von den Skripten erzeugte RCC-Profile (`proxytest-a[-auth][-nonoproxy].yaml`) |
 | `mitmproxy/` | rcc-Environment und Addon für die Proxies unter Windows (ohne Docker) |
@@ -85,13 +85,13 @@ robot-Logs, Proxy-Logs, `caller_env.txt` (vom Skript gesetzte Variablen), `rcc_p
 
 Alle Szenarien mit Browser Library 20.6.0:
 
-| # | Proxy A (Env/RCC) | `NO_PROXY` | `New Browser` | Erwartung |
+| # | Proxy A (Env/RCC) | `NO_PROXY` | Proxy B explizit (`proxy=`/`proxies=`) | Erwartung |
 |---|---|---|---|---|
-| 1 | ja | `localhost,127.0.0.1` | ohne `proxy` | PASS |
-| 2 | ja | `localhost,127.0.0.1` | Proxy B | PASS |
-| 3 | nein | – | ohne `proxy` | PASS |
-| 4 | nein | – | Proxy B | PASS |
-| 5 (`--fail`) | ja | **fehlt** | ohne `proxy` | PASS (vor 20.4.0: FAIL) |
+| 1 | ja | `localhost,127.0.0.1` | – | PASS |
+| 2 | ja | `localhost,127.0.0.1` | ja | PASS |
+| 3 | nein | – | – | PASS |
+| 4 | nein | – | ja | PASS |
+| 5 (`--fail`) | ja | **fehlt** | – | PASS (vor 20.4.0: FAIL) |
 
 ## Ergebnisse
 
@@ -107,25 +107,25 @@ Browser Library 20.6.0 (Playwright 1.63), rcc v17.29.1. Neun Läufe mit je fünf
 
 `profile` und `env` liefern identische Zusammenfassungen, ebenso `profile-auth` und `env-auth`, auf beiden Plattformen.
 
-| # | Proxy A | `NO_PROXY` | `New Browser` | Env im Test | Python-Request | Browser-Traffic |
+| # | Proxy A | `NO_PROXY` | Proxy B explizit | Env im Test | RequestsLibrary | Browser-Traffic |
 |---|---|---|---|---|---|---|
-| 1 | ja | gesetzt | ohne `proxy` | `HTTP(S)_PROXY=…:3128` | **Proxy A** | **direkt** (weder A noch B) |
-| 2 | ja | gesetzt | Proxy B | `HTTP(S)_PROXY=…:3128` | **Proxy A** | **Proxy B** |
-| 3 | nein | – | ohne `proxy` | nicht gesetzt | direkt | **direkt** |
-| 4 | nein | – | Proxy B | nicht gesetzt | direkt | **Proxy B** |
-| 5 | ja | fehlt | ohne `proxy` | `HTTP(S)_PROXY=…:3128` | **Proxy A** | **direkt**, Test läuft |
+| 1 | ja | gesetzt | – | `HTTP(S)_PROXY=…:3128` | **Proxy A** | **direkt** (weder A noch B) |
+| 2 | ja | gesetzt | ja | `HTTP(S)_PROXY=…:3128` | **Proxy B** | **Proxy B** |
+| 3 | nein | – | – | nicht gesetzt | direkt | **direkt** |
+| 4 | nein | – | ja | nicht gesetzt | **Proxy B** | **Proxy B** |
+| 5 | ja | fehlt | – | `HTTP(S)_PROXY=…:3128` | **Proxy A** | **direkt**, Test läuft |
 
-Mit `--auth`: identische Wege. Python schickt die Zugangsdaten aus der Proxy-URL gleich mit (0× 407 an Proxy A),
+Mit `--auth`: identische Wege. requests schickt die Zugangsdaten aus der Proxy-URL gleich mit (Umgebungsvariable wie `proxies=`, 0× 407),
 Chromium bekommt beim ersten Request an Proxy B einmal 407 und authentifiziert sich dann mit `username`/`password`.
 
 `htvars.txt` (`rcc ht vars` mit derselben Umgebung wie der Test) enthält die Proxy-Variablen nur in den
 `profile`-Läufen, in den `env`-Läufen nicht, obwohl sie dort im Test ankommen (siehe Erkenntnis 5).
 
-Die Logs zeigen z. B. für Szenario 2:
+Die Logs zeigen z. B. für Szenario 1 (Variablen auf Proxy A, nichts explizit):
 
 ```text
 Proxy A:  http://example.com/?via=python-requests
-Proxy B:  http://example.com/  http://example.com/s.js  https://example.org/  https://example.org/s.js
+Proxy B:  –   (Browser ging direkt)
 ```
 
 ### Windows mit System-Proxy (`windows-profile-sysproxy`)

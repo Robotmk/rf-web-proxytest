@@ -1,6 +1,6 @@
 # Briefing: Proxies mit Robotmk, RCC und Browser Library
 
-15.10.2026 · Simon Meggle
+18.10.2026 · Simon Meggle
 
 Ein RCC-Proxyprofil leitet Python-Traffic über den Proxy, den Browser der Browser Library aber nicht: Der braucht `proxy=` in `New Browser`. Dieses Briefing fasst die Messungen aus dem Projekt rf-web-proxytest für einen Blogartikel an Robotmk-Anwender zusammen. Grundlage sind 45 Testläufe auf macOS und Windows, alle grün.
 
@@ -68,7 +68,7 @@ Umgebungen: macOS mit Docker; Windows Server 2022 als Administrator. Beide mit r
 
 ## Messergebnisse
 
-Neun Läufe mit je fünf Szenarien, 45 von 45 grün. Der Python-Request läuft auf macOS über die RequestsLibrary (Läufe vom 16.10.2026, gleiche Wege wie zuvor mit urllib). Die Windows-Läufe stammen noch aus der Version mit urllib; requests ermittelt den Proxy mit derselben Funktion `urllib.request.getproxies()`, eine Wiederholung steht aber aus.
+Neun Läufe mit je fünf Szenarien, 45 von 45 grün. Der Python-Request läuft auf beiden Plattformen über die RequestsLibrary 0.9.7 (requests ermittelt den Proxy mit `urllib.request.getproxies()`). Eine frühere Messreihe mit urllib lieferte dieselben Wege.
 
 | Plattform | Läufe |
 | --- | --- |
@@ -122,7 +122,7 @@ Im Lauf `windows-profile-sysproxy` war der WinINET-Proxy des Benutzers aktiv (`P
 
 Der Systemproxy war nachweislich wirksam:
 
-- In den Szenarien 3 und 4 gibt es weder Profil noch Variablen. Der Python-Request (in diesem Lauf noch mit urllib) ging trotzdem über Proxy A, weil `urllib.request.getproxies()` unter Windows ohne Env-Variablen die Registry liest. requests nutzt dieselbe Funktion.
+- In den Szenarien 3 und 4 gibt es weder Profil noch Variablen. Der Request der RequestsLibrary ging trotzdem über Proxy A, weil requests den Proxy mit `urllib.request.getproxies()` ermittelt und diese Funktion unter Windows ohne Env-Variablen die Registry liest.
 - Im Log von Proxy A erscheinen zusätzlich Verbindungen anderer Programme des Benutzers, etwa VS Code zu `main.vscode-cdn.net`.
 
 Chromium ging trotzdem in den Szenarien 1, 3 und 5 direkt. Playwright gibt Chromium ohne `proxy=` kein Proxy-Flag mit (geprüft im Playwright-Code der Browser Library 20.6.0). Warum der Browser den WinINET-Proxy dennoch nicht nutzt, ist nicht geklärt. Naheliegend ist, dass Playwright für `headless=True` die schlanke Chromium-Variante „headless shell“ startet; das ist nicht geprüft. Für den Artikel reicht die messbare Aussage: **Auf den Systemproxy ist kein Verlass, `proxy=` schon.**
@@ -223,7 +223,7 @@ Grafiken:
 - [x] `run_scenarios.ps1` auf einem Windows-Host ausführen (Windows Server 2022, alle Läufe vollständig)
 - [x] Windows mit gesetztem WinINET-Proxy (Lauf `windows-profile-sysproxy`): Browser ignoriert ihn, Python folgt ihm
 - [ ] Ursache klären, warum Chromium den WinINET-Proxy ignoriert: Systemproxy-Lauf mit `headless=False` bzw. `channel=chrome` wiederholen. Folgt der Browser dann dem Systemproxy, betrifft die Aussage nur headless
-- [ ] Windows-Läufe mit der RequestsLibrary wiederholen (bisher urllib)
+- [x] Alle Läufe mit der RequestsLibrary wiederholen (macOS und Windows, alle grün)
 - [ ] Windows mit PAC-Datei statt festem Proxy
 - [ ] Robotmk-Scheduler als SYSTEM gegen einen angemeldeten Benutzer vergleichen
 - [ ] Sonderzeichen im Proxy-Passwort (URL-Kodierung im RCC-Profil) testen

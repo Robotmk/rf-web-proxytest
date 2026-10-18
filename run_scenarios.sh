@@ -2,7 +2,7 @@
 # Spielt die Proxy-Szenarien durch und protokolliert, über welchen Proxy der Traffic geht.
 #
 #   Proxy A = localhost:3128 (per RCC-Profil bzw. Proxy-Env-Variablen)
-#   Proxy B = localhost:3129 (nur explizit in der Browser Library gesetzt)
+#   Proxy B = localhost:3129 (nur explizit im Test gesetzt: New Browser proxy= und RequestsLibrary proxies=)
 #
 # Aufruf: ./run_scenarios.sh [--proxy-from profile|env] [--auth] [--fail] [Nr ...]
 #
@@ -12,7 +12,7 @@
 #   --proxy-from profile  (Default) RCC-Proxyprofil erzeugen und aktivieren
 #   --proxy-from env      kein RCC-Profil; das Skript setzt HTTP(S)_PROXY/NO_PROXY selbst und
 #                         "rcc task script" vererbt sie an robot (Gegenprobe zum Profil)
-#   --auth   Proxies verlangen Benutzer/Passwort (Env-Variablen/RCC-Profil bzw. New Browser proxy=)
+#   --auth   Proxies verlangen Benutzer/Passwort (Env-Variablen/RCC-Profil bzw. New Browser proxy= und RequestsLibrary proxies=)
 #   --fail   zusätzlich Szenario 5: NO_PROXY fehlt (vor Browser Library 20.4.0 scheiterte daran die
 #            interne gRPC-Verbindung; hier wird nur 20.6.0 getestet)
 #   Nr ...   nur diese Szenarien, z. B. "./run_scenarios.sh --fail 5"
@@ -55,13 +55,13 @@ PROXY_A=http://localhost:3128
 
 #  Nr Proxy A  NO_PROXY  Browser-Resource                    Erwartung
 SCENARIOS=(
-  "1 A    ja   resources/browser_noproxy.resource  PASS"
-  "2 A    ja   resources/browser_proxyB.resource   PASS"
-  "3 -    -    resources/browser_noproxy.resource  PASS"
-  "4 -    -    resources/browser_proxyB.resource   PASS"
+  "1 A    ja   resources/noproxy.resource  PASS"
+  "2 A    ja   resources/proxyB.resource   PASS"
+  "3 -    -    resources/noproxy.resource  PASS"
+  "4 -    -    resources/proxyB.resource   PASS"
 )
 ((FAIL)) && SCENARIOS+=(
-  "5 A    nein resources/browser_noproxy.resource  PASS"
+  "5 A    nein resources/noproxy.resource  PASS"
 )
 
 # --- Hilfsfunktionen -------------------------------------------------------------------------
@@ -185,7 +185,7 @@ for entry in "${SCENARIOS[@]}"; do
   rm -rf "$dir"; mkdir -p "$dir"
   echo "=== Szenario $nr: Proxy A=$proxy, NO_PROXY=$noproxy, Browser $BROWSER_VERSION, $(basename "$resource") ==="
 
-  robot_args=(-v "BROWSER_RESOURCE:$resource" -d "$dir" --console verbose)
+  robot_args=(-v "SCENARIO_RESOURCE:$resource" -d "$dir" --console verbose)
   ((AUTH)) && robot_args+=(-v "PROXY_USER:$PROXY_USER" -v "PROXY_PASS:$PROXY_PASS")
   robot_args+=(proxy.robot)
 

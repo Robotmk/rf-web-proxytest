@@ -5,7 +5,7 @@
 
 .DESCRIPTION
     Proxy A = localhost:3128 (per RCC-Profil bzw. Proxy-Env-Variablen)
-    Proxy B = localhost:3129 (nur explizit in der Browser Library gesetzt)
+    Proxy B = localhost:3129 (nur explizit im Test gesetzt: New Browser proxy= und RequestsLibrary proxies=)
 
     Ohne Docker: Beide Proxies sind mitmdump-Prozesse aus einem eigenen rcc-Environment
     (mitmproxy/robot.yaml). Das Addon mitmproxy/block_loopback.py weist Ziele auf localhost mit 502 ab,
@@ -21,7 +21,7 @@
     env: kein RCC-Profil; das Skript setzt HTTP(S)_PROXY/NO_PROXY selbst und "rcc task script" vererbt
     sie an robot (Gegenprobe zum Profil).
 .PARAMETER Auth
-    Proxies verlangen Benutzer/Passwort (Env-Variablen/RCC-Profil bzw. New Browser proxy=).
+    Proxies verlangen Benutzer/Passwort (Env-Variablen/RCC-Profil bzw. New Browser proxy= und RequestsLibrary proxies=).
 .PARAMETER Fail
     Zusätzlich Szenario 5: NO_PROXY fehlt. Vor Browser Library 20.4.0 scheiterte daran die interne
     gRPC-Verbindung; getestet wird nur 20.6.0.
@@ -78,12 +78,12 @@ function New-Scenario($Nr, $Proxy, $NoProxy, $Resource, $Expect) {
     [pscustomobject]@{ Nr = $Nr; Proxy = $Proxy; NoProxy = $NoProxy; Resource = $Resource; Expect = $Expect }
 }
 $Scenarios = @(
-    New-Scenario 1 'A' 'ja' 'resources/browser_noproxy.resource' 'PASS'
-    New-Scenario 2 'A' 'ja' 'resources/browser_proxyB.resource'  'PASS'
-    New-Scenario 3 '-' '-'  'resources/browser_noproxy.resource' 'PASS'
-    New-Scenario 4 '-' '-'  'resources/browser_proxyB.resource'  'PASS'
+    New-Scenario 1 'A' 'ja' 'resources/noproxy.resource' 'PASS'
+    New-Scenario 2 'A' 'ja' 'resources/proxyB.resource'  'PASS'
+    New-Scenario 3 '-' '-'  'resources/noproxy.resource' 'PASS'
+    New-Scenario 4 '-' '-'  'resources/proxyB.resource'  'PASS'
 )
-if ($Fail) { $Scenarios += New-Scenario 5 'A' 'nein' 'resources/browser_noproxy.resource' 'PASS' }
+if ($Fail) { $Scenarios += New-Scenario 5 'A' 'nein' 'resources/noproxy.resource' 'PASS' }
 if ($Scenario.Count -gt 0) { $Scenarios = @($Scenarios | Where-Object { $Scenario -contains $_.Nr }) }
 
 # --- Hilfsfunktionen -------------------------------------------------------------------------
@@ -269,7 +269,7 @@ try {
         $resourceName = Split-Path $s.Resource -Leaf
         Write-Host "=== Szenario $($s.Nr): Proxy A=$($s.Proxy), NO_PROXY=$($s.NoProxy), Browser $browserVersion, $resourceName ==="
 
-        $robotArgs = @('-v', "BROWSER_RESOURCE:$($s.Resource)", '-d', $dir, '--console', 'verbose')
+        $robotArgs = @('-v', "SCENARIO_RESOURCE:$($s.Resource)", '-d', $dir, '--console', 'verbose')
         if ($Auth) { $robotArgs += @('-v', "PROXY_USER:$ProxyUser", '-v', "PROXY_PASS:$ProxyPass") }
         $robotArgs += 'proxy.robot'
 

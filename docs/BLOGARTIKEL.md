@@ -12,9 +12,9 @@ Ich wollte das Verhalten von Browser Library und RequestsLibrary mal "kurz" in e
 
 Zur Demonstration dient ein ganz einfacher Testcase, der zuerst per **REST-Aufruf** prüft, ob ein Backend antwortet, und dann eine Weboberfläche im **Browser** öffnet:
 
-```
+```robotframework
 Python Request
-    GET    url=http://example.com/?via=python-requests    expected_status=200
+    Scenario GET    http://example.com/?via=python-requests
 
 Open HTTP And HTTPS Page
     Open Scenario Browser
@@ -24,64 +24,89 @@ Open HTTP And HTTPS Page
     Get Title    ==    Example Domain
 ```
 
-`Open Scenario Browser` ist ein Keyword, das die Browser Library startet.  
-Es ist in allen Läufen identisch, nur die Proxy-Konfiguration variiert.
+`Scenario GET` und `Open Scenario Browser` stammen aus einer Resource-Datei, die je nach Szenario wechselt.  
+In der einen rufen sie `GET` und `New Browser` ohne Proxy auf, in der anderen mit einem explizit angegebenen Proxy.  
+Der Test selbst ist in allen Läufen identisch, nur die Proxy-Konfiguration variiert.
 
 Wie sich die beiden oben genannten Libraries daran halten, wollte ich genau wissen.
 
 ### Proxies
 
-Ich habe mit **zwei Docker-Instanzen** von [mitmproxy](https://www.mitmproxy.org) aufgesetzt. 
+Ich habe **zwei Instanzen** von [mitmproxy](https://www.mitmproxy.org) aufgesetzt, auf macOS als Docker-Container, unter Windows als lokale Prozesse.
 
 - **Proxy A** ist vorgesehen für die Umgebungsvariablen des Betriebssystems.  
-- **Proxy B** wird im Test selbst an die Browser-Instanz im Keyword `New Browser` übergeben, um die Proxy-Config A ggf. zu überschreiben.
+- **Proxy B** wird im Test selbst explizit angegeben: der RequestsLibrary per `proxies=` in `GET`, der Browser Library per `proxy=` in `New Browser`. So lässt sich sehen, ob der explizite Proxy die Variablen überstimmt.
 
 ### Proxy-Umgebungsvariablen
 
-Ich wollte auch wissen, was passiert, wenn beim Aufruf von RObot Framework bereits Proxy-Umgebungsvariablen gesetzt sind.  
+Ich wollte natürlich auch wissen, was passiert, wenn beim Aufruf von Robot Framework bereits Proxy-Umgebungsvariablen gesetzt sind.  
 
-Diese gibt es: 
+Derlei drei finden sich in allen Betriebssystemen, z. B. in der Shell oder in den Systemeinstellungen:
 
 - `HTTP_PROXY` = Proxy-Server für HTTP-Ziele  
 - `HTTPS_PROXY` = Proxy-Server für HTTPS-Ziele     
-- `NO_PROXY` = Hosts, die direkt erreicht werden sollen (Proxy-Bypass)
+- `NO_PROXY` = braucht man, sobald ein Proxy gesetzt ist: Es nimmt Ziele aus, die nicht über den Proxy laufen sollen oder können, typischerweise `localhost,127.0.0.1` und interne Hosts. Ohne Proxy hat die Variable nichts zu tun.
 
-> Viele Programme verstehen diese Variablen als Proxy-Konfiguration. 
+> Viele Programme nutzen diese Variablen zur Proxy-Konfiguration. 
 > Ein Standard ist das aber nicht: Jedes Programm entscheidet selbst, ob und wie es sie liest.
-
-
-Aus Netzwerksicht sind das aber schon mal zwei Paar Schuhe. 
-Der REST-Aufruf **RequestsLibrary** läuft im Python-Prozess von Robot Framework.  
-Die **BrowserLibrary** hingegen startet dafür einen Nodejs-Prozess, der dann über Playwright z. B. den **Chromium**-Browser steuert.
 
 ### Der Testablauf
 
+
 Testen wollte ich fünf Kombinationen:
 
-| #   | Proxy-Env-Variablen (A) | `NO_PROXY` | `proxy=` im Browser (B) |
-| --- | ----------------------- | ---------- | ----------------------- |
-| 1   | ☑️                      | ☑️         | nein                    |
-| 2   | ☑️                      | ☑️         | ☑️                      |
-| 3   | –                       | –          | nein                    |
-| 4   | –                       | –          | ☑️                      |
-| 5   | ☑️                      | fehlt      | nein                    |
-Zu testen 
+| #   | Proxy-Env-Variablen (A) | `NO_PROXY`                   | Proxy explizit im Test (B) | Frage dahinter                                       |
+| --- | ----------------------- | ---------------------------- | -------------------------- | ---------------------------------------------------- |
+| 1   | ☑️                      | `localhost,127.0.0.1`        | –                          | Folgen beide Libraries den Variablen?                |
+| 2   | ☑️                      | `localhost,127.0.0.1`        | ☑️                         | Setzt sich der explizite Proxy gegen die Variablen durch? |
+| 3   | –                       | – (ohne Proxy bedeutungslos) | –                          | Gegenprobe: Geht ohne Proxy alles direkt?            |
+| 4   | –                       | – (ohne Proxy bedeutungslos) | ☑️                         | Wirkt der explizite Proxy auch ganz allein?          |
+| 5   | ☑️                      | **bewusst nicht gesetzt**    | –                          | Was passiert, wenn `NO_PROXY` vergessen wird?        |
 
-Damit ich nicht alles von Hand ausführen muss, habe ich mir ein kleiens Script für Linux und Windows geschrieben.  
-Für jedes Szenario startet es beide Proxies als Docker-Container), setzt die Proxy-Variablen (oder lässt sie weg), wählt die Browser-Konfiguration mit oder ohne `proxy=` und führt den Test aus.
+„Explizit im Test“ heißt: `proxies=` bei der RequestsLibrary und `proxy=` bei der Browser Library, immer beide zusammen.
+
+Damit ich nicht alles von Hand ausführen muss, habe ich mir ein kleines Skript für macOS (Bash) und Windows (PowerShell) geschrieben.  
+
+Für jedes Szenario 
+
+- startet es beide Proxies mit leerem Log (auf macOS als Docker-Container, unter Windows als lokale `mitmdump`-Prozesse),
+- setzt ggf. Proxy-Variablen im Environment (oder lässt sie weg),
+- wählt die Resource-Datei mit oder ohne expliziten Proxy
+- und führt den Test aus.
+
 Danach sammelt es die Logs beider Proxies ein und hält in einer Zusammenfassung fest, welcher Request über welchen Proxy lief.
 
+Jede Kombination lief auf macOS und auf Windows Server 2022, und zwar einmal ohne und einmal mit Proxy-Anmeldung. Am Weg der Requests hat die Anmeldung nichts geändert; wie man die Zugangsdaten angibt, habe ich deshalb am Ende als Referenz zusammengefasst.
 
-Jede Kombination lief einmal ohne und einmal mit Proxy-Anmeldung (Benutzer und Passwort), auf macOS und auf Windows Server 2022.
-Außerdem kamen die Proxy-Variablen einmal aus einem RCC-Profil und einmal direkt aus der Umgebung – dazu mehr im Abschnitt über Robotmk am Ende.
+Außerdem kamen die Proxy-Variablen einmal aus einem RCC-Profil und einmal direkt aus der Umgebung (dazu mehr im Abschnitt über Robotmk am Ende).
+
 Unter Windows kam ein weiterer Lauf hinzu, bei dem zusätzlich der Systemproxy des Benutzers auf Proxy A zeigte.
-Insgesamt waren das 45 Testläufe, alle grün. Spannend war also nicht, *ob* der Test durchläuft, sondern *welchen Weg* er dabei nimmt.
 
-## Python hält sich an die Regeln
+Insgesamt waren das also **45 Testläufe**. Spannend war also nicht, *ob* der Test durchläuft, sondern *welchen Weg* er dabei nimmt.
 
-Beginnen wir mit dem unkomplizierten Teil. Sobald `HTTP_PROXY` und `HTTPS_PROXY` gesetzt waren, landete der Python-Request in jedem Lauf bei Proxy A. Fehlten die Variablen, ging er direkt. Keine Überraschungen.
+## Die Ergebnisse
 
-Die RequestsLibrary baut auf requests auf, und requests ermittelt den Proxy mit der Funktion `getproxies()` aus dem Modul `urllib.request` der Standardbibliothek. Die eigentliche Verbindung baut requests dann über urllib3 auf. Für den REST-Teil deines Tests bedeutet das: Wenn du die Variablen setzt, musst du im Test nichts weiter tun.
+Vorweg die Übersicht, wohin die beiden Libraries ihre Requests geschickt haben:
+
+| #   | Proxy-Env-Variablen (A) | Proxy explizit im Test (B) | RequestsLibrary | Browser Library |
+| --- | ----------------------- | -------------------------- | --------------- | --------------- |
+| 1   | ☑️                      | –                          | Proxy A         | **direkt**      |
+| 2   | ☑️                      | ☑️                         | Proxy B         | Proxy B         |
+| 3   | –                       | –                          | direkt          | direkt          |
+| 4   | –                       | ☑️                         | Proxy B         | Proxy B         |
+| 5   | ☑️ (ohne `NO_PROXY`)    | –                          | Proxy A         | **direkt**      |
+
+Das Ergebnis war auf macOS und Windows gleich, mit und ohne Anmeldung. Die einzige Abweichung brachte der Windows-Systemproxy, dazu unten mehr.
+
+### Python hält sich an die Regeln
+
+Beginnen wir mit dem unkomplizierten Teil. 
+
+Sobald `HTTP_PROXY` und `HTTPS_PROXY` gesetzt waren, richtete die `RequestsLibrary` jeden Aufruf an Proxy A.  
+Fehlten die Variablen, ging er direkt, mit einer Ausnahme unter Windows, dazu gleich mehr.  
+Bekam `GET` dagegen explizit `proxies=` mit, ging der Request über Proxy B, auch wenn die Variablen auf Proxy A zeigten (Szenario 2). Der explizite Proxy gewinnt.
+
+Für die `RequestsLibrary` bedeutet das: Wenn du die Variablen setzt, musst du im Test nichts weiter tun.
 
 ```robotframework
 *** Settings ***
@@ -92,7 +117,7 @@ Backend Antwortet
     ${resp}=    GET    https://example.org    expected_status=200
 ```
 
-Willst du den Proxy lieber ausdrücklich im Test festlegen, etwa weil der Test auf verschiedenen Maschinen laufen soll, übergibst du ihn der Session:
+Willst du den Proxy lieber ausdrücklich im Test festlegen, etwa weil der Test auf verschiedenen Maschinen laufen soll, übergibst du ihn mit `proxies=`:
 
 ```robotframework
 *** Settings ***
@@ -101,26 +126,27 @@ Library    RequestsLibrary
 *** Test Cases ***
 Backend Antwortet Über Proxy
     &{proxies}=    Create Dictionary    http=http://proxy.example:3128    https=http://proxy.example:3128
-    Create Session    api    https://example.org    proxies=${proxies}
-    ${resp}=    GET On Session    api    /    expected_status=200
+    ${resp}=    GET    https://example.org    proxies=${proxies}    expected_status=200
 ```
 
-Eine Eigenheit zeigte sich unter Windows. Im Lauf mit gesetztem Systemproxy (Internetoptionen bzw. WinINET) gab es Szenarien ganz **ohne** Proxy-Variablen, und trotzdem ging der Python-Request über Proxy A. Der Grund: Findet `getproxies()` unter Windows keine Variablen, liest es die Proxy-Einstellungen des Benutzers aus der Registry. Das ist praktisch, kann aber verwirren, wenn du „nichts konfiguriert“ hast.
+Dasselbe Argument nimmt auch `Create Session` entgegen, dann gilt der Proxy für alle Requests der Session.
 
-**Mein Fazit für Python:** Es folgt den Umgebungsvariablen und unter Windows ersatzweise dem Systemproxy. Das Verhalten ist dokumentiert und vorhersagbar. Du musst nur wissen, welche Umgebung der Test tatsächlich sieht.
+Eine Eigenheit zeigte sich unter Windows. Im Lauf mit gesetztem Systemproxy (Internetoptionen bzw. WinINET) ging der Python-Request in Szenario 3, also ganz **ohne** Proxy-Variablen und ohne `proxies=`, trotzdem über Proxy A. Der Grund: Findet `getproxies()` unter Windows keine Variablen, liest es die Proxy-Einstellungen des Benutzers aus der Registry. Das ist praktisch, kann aber verwirren, wenn du „nichts konfiguriert“ hast.
 
-## Der Browser geht seinen eigenen Weg
+**Mein Fazit für Python:** Ein expliziter Proxy hat Vorrang. Ohne ihn folgt requests den Umgebungsvariablen und unter Windows ersatzweise dem Systemproxy. Das Verhalten ist dokumentiert und vorhersagbar. Du musst nur wissen, welche Umgebung der Test tatsächlich sieht.
+
+### Der Browser geht seinen eigenen Weg
 
 Da wurde es richtig interessant... 
 
 In allen Läufen mit gesetzten Proxy-Variablen (A), aber ohne `proxy=` in `New Browser` (B), lief über den Proxy A nur der Python-Request.  
-Der Browser-Traffic hingegen fehlte vollständig.
+Der Browser-Traffic hingegen fehlte vollständig: Chromium ging direkt ins Netz (Szenarien 1 und 5).
 
 Warum ist das so? 
 
 **Playwright startet Chromium nur dann mit einem Proxy, wenn man ihm explizit einen übergibt.**  
 Ohne `proxy` setzt es kein `--proxy-server`-Flag, und die Proxy-Variablen wertet Chromium auf macOS und Windows nicht aus.  
-Und ich bin mir sicher, warum das so gebaut wurde: Der Browser soll sich ja in jedem Test gleich verhalten, ganz unabhängig von der Umgebung, in der er zufällig gestartet wird.
+Ich vermute, das ist Absicht: Der Browser soll sich ja in jedem Test gleich verhalten, ganz unabhängig von der Umgebung, in der er zufällig gestartet wird.
 
 
 ```robotframework
@@ -138,36 +164,6 @@ Startseite Hinter Dem Proxy
 
 **Mein Fazit für den Browser:** Er liest nur, was du ihm in `New Browser` sagst. Alles andere ist für ihn Hintergrundrauschen.
 
-## Gleiche Zugangsdaten, zwei Formate
-
-Viele Firmen-Proxies verlangen eine Anmeldung. Auch hier erwarten Python und Browser die Daten in unterschiedlicher Form.
-
-Python erwartet die Zugangsdaten in der URL der Umgebungsvariable:
-
-```text
-HTTPS_PROXY=http://proxyuser:s3cr3t@proxy.example:3128
-```
-
-In den Proxy-Logs war schön zu sehen, wie gut das funktioniert: Python schickte die Zugangsdaten gleich mit der ersten Anfrage mit. Proxy A musste kein einziges Mal mit `407 Proxy Authentication Required` antworten.
-
-Der Browser braucht dagegen die eigenen Felder `username` und `password` im `proxy`-Dictionary:
-
-```robotframework
-*** Settings ***
-Library    Browser
-
-*** Test Cases ***
-Startseite Mit Proxy-Anmeldung
-    &{proxy}=    Create Dictionary    server=http://proxy.example:3128    bypass=localhost,127.0.0.1
-    ...    username=%{PROXY_USER}    password=%{PROXY_PASS}
-    New Browser    chromium    proxy=${proxy}
-    New Page    https://example.org
-```
-
-Chromium fragt zunächst ohne Anmeldung an, erhält einmal 407 und meldet sich dann an. Danach lief der Traffic in allen Läufen ohne weitere Rückfragen durch.
-
-Zwei Hinweise aus der Praxis: Die Zugangsdaten gehören nicht in die `.robot`-Datei, sondern in Umgebungsvariablen oder einen Tresor. Und wenn dein Passwort Sonderzeichen enthält, musst du sie in der URL für Python kodieren, aus `@` wird zum Beispiel `%40`. Diesen Fall habe ich nicht eigens gemessen, er folgt aber aus den Regeln für URLs.
-
 ## Die unsichtbare Verbindung: gRPC und `NO_PROXY`
 
 Neben Python und dem Browser gibt es noch eine dritte Verbindung, die man leicht übersieht, weil sie gar nicht ins Internet will. Die Browser Library verbindet sich per gRPC mit ihrem Node-Prozess auf `127.0.0.1` und einem zufälligen Port.
@@ -176,7 +172,7 @@ Neben Python und dem Browser gibt es noch eine dritte Verbindung, die man leicht
 
 Lange war genau das eine Stolperfalle. Die gRPC-Bibliothek für Python schickt auch lokale Verbindungen über den Proxy aus den Umgebungsvariablen, wenn `NO_PROXY` sie nicht ausnimmt. Ein Proxy auf einem anderen Rechner kann `127.0.0.1` aber nicht erreichen, denn dort zeigt die Adresse auf ihn selbst. Das Ergebnis war eine Fehlermeldung, die viele in der Community kennen dürften: `Could not connect to the playwright process`.
 
-Seit Browser Library 20.4.0 ist das behoben ([robotframework-browser#1037](https://github.com/MarketSquare/robotframework-browser/issues/1037)). Die Library schaltet den Proxy für ihren internen Kanal selbst ab (`grpc.enable_http_proxy=0`). Im Versuch lief deshalb auch das Szenario ohne `NO_PROXY` in allen Läufen durch, mit und ohne Anmeldung, auf beiden Plattformen.
+Seit Browser Library 20.4.0 ist das behoben ([robotframework-browser#1037](https://github.com/MarketSquare/robotframework-browser/issues/1037)). Die Library schaltet den Proxy für ihren internen Kanal selbst ab (`grpc.enable_http_proxy=0`). Im Versuch lief deshalb auch das Szenario ohne `NO_PROXY` in allen Läufen durch, auf beiden Plattformen.
 
 Ich empfehle trotzdem, `NO_PROXY` mindestens auf `localhost,127.0.0.1` zu setzen. Es kostet nichts, schützt ältere Environments und hält auch andere lokale Verbindungen vom Proxy fern. Und falls du noch eine Version vor 20.4.0 im Einsatz hast, ist das ein guter Grund für ein Update.
 
@@ -206,14 +202,14 @@ Fasst man alle Messungen zusammen, ergibt sich ein klares Bild: Jede Verbindung 
 
 ![Schichtenmodell: wer welche Proxy-Einstellung liest](schichtenmodell.png)
 
-Python folgt den Umgebungsvariablen und unter Windows ersatzweise dem Systemproxy. Chromium liest nur `proxy=` aus `New Browser`. Die interne gRPC-Verbindung der Browser Library ist seit 20.4.0 vom Proxy ausgenommen.
+Python nimmt einen expliziten Proxy (`proxies=`), sonst die Umgebungsvariablen und unter Windows ersatzweise den Systemproxy. Chromium liest nur `proxy=` aus `New Browser`. Die interne gRPC-Verbindung der Browser Library ist seit 20.4.0 vom Proxy ausgenommen.
 
 ## Die Checkliste für den nächsten Proxy-Fall
 
 Aus den Messungen ist eine kurze Liste geworden, die ich inzwischen bei jedem neuen Projekt hinter einem Proxy durchgehe:
 
 - Jeder `New Browser`, der durch den Proxy muss, bekommt `proxy=` mit `server` und `bypass`, auch wenn Variablen oder ein Systemproxy gesetzt sind.
-- Zugangsdaten für den Browser stehen in `username` und `password`, für Python in der URL der Variable.
+- Die RequestsLibrary bekommt entweder die Umgebungsvariablen oder `proxies=`, wenn der Test unabhängig von der Umgebung laufen soll.
 - `NO_PROXY` enthält mindestens `localhost,127.0.0.1`.
 - Die Browser Library ist mindestens Version 20.4.0.
 - Die Umgebung des startenden Prozesses ist bekannt, also Dienst, Benutzer und systemweite Variablen.
@@ -247,7 +243,48 @@ Zwei Details sind für Robotmk-Anwender trotzdem wichtig:
 - **`rcc task script` erbt die Umgebung des Aufrufers.** Ohne Profil setzt RCC keine Proxy-Variablen, entfernt aber auch keine vorhandenen. Variablen des Schedulers oder des Systems kommen also im Test an.
 - **`rcc ht vars` zeigt nur, was das Profil setzt.** Geerbte Variablen tauchen dort nicht auf. Wenn du damit prüfst, welcher Proxy im Test wirkt, siehst du im Zweifel nur die halbe Wahrheit. Das Protokollieren der Variablen im Test ist deshalb auch hier der verlässlichere Weg.
 
-Die Zugangsdaten in der Proxy-URL reicht RCC unverändert an Python weiter. Für den Browser gilt wie oben: `username` und `password` im `proxy`-Dictionary.
+## Referenz: Proxy mit Anmeldung
+
+Viele Firmen-Proxies verlangen Benutzer und Passwort. Am Weg der Requests ändert das nichts, aber jede Stelle erwartet die Zugangsdaten in einer anderen Form. Alle Varianten liefen im Versuch durch.
+
+**Umgebungsvariable** (und damit RequestsLibrary ohne `proxies=`): Zugangsdaten in der URL.
+
+```text
+HTTPS_PROXY=http://proxyuser:s3cr3t@proxy.example:3128
+```
+
+**RequestsLibrary mit `proxies=`:** ebenfalls in der URL.
+
+```robotframework
+*** Settings ***
+Library    RequestsLibrary
+
+*** Test Cases ***
+Backend Über Proxy Mit Anmeldung
+    ${proxy}=    Set Variable    http://%{PROXY_USER}:%{PROXY_PASS}@proxy.example:3128
+    &{proxies}=    Create Dictionary    http=${proxy}    https=${proxy}
+    ${resp}=    GET    https://example.org    proxies=${proxies}    expected_status=200
+```
+
+**Browser Library:** eigene Felder `username` und `password` im `proxy`-Dictionary.
+
+```robotframework
+*** Settings ***
+Library    Browser
+
+*** Test Cases ***
+Startseite Mit Proxy-Anmeldung
+    &{proxy}=    Create Dictionary    server=http://proxy.example:3128    bypass=localhost,127.0.0.1
+    ...    username=%{PROXY_USER}    password=%{PROXY_PASS}
+    New Browser    chromium    proxy=${proxy}
+    New Page    https://example.org
+```
+
+**RCC-Profil:** wie die Umgebungsvariable, die URL mit Zugangsdaten in `http-proxy` und `https-proxy`. RCC reicht sie unverändert an Python weiter.
+
+In den Proxy-Logs sieht man einen kleinen Unterschied: requests schickt die Zugangsdaten gleich mit der ersten Anfrage mit, der Proxy musste nie mit `407 Proxy Authentication Required` antworten. Chromium fragt zunächst ohne Anmeldung an, erhält einmal 407 und meldet sich dann an.
+
+Zwei Hinweise aus der Praxis: Die Zugangsdaten gehören nicht in die `.robot`-Datei, sondern in Umgebungsvariablen oder einen Tresor. Und wenn dein Passwort Sonderzeichen enthält, musst du sie in der URL kodieren, aus `@` wird zum Beispiel `%40`. Diesen Fall habe ich nicht eigens gemessen, er folgt aber aus den Regeln für URLs.
 
 ## Was bleibt
 

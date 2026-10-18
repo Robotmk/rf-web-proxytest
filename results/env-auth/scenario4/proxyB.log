@@ -1,24 +1,28 @@
-[21:15:18.694] HTTP(S) proxy listening at *:8080.
-[21:15:19.162][172.17.0.1:48078] client connect
-172.17.0.1:48078: GET http://mitm.it/
+[19:16:04.494] HTTP(S) proxy listening at *:8080.
+[19:16:05.349][172.17.0.1:58908] client connect
+172.17.0.1:58908: GET http://mitm.it/
                << 200 OK 17.5k
-[21:15:19.378][172.17.0.1:48078] client disconnect
-[21:15:30.064][172.17.0.1:55520] client connect
-172.17.0.1:55520: GET http://example.com/
-               << 407 Proxy Authentication Required 129b
-[21:15:30.173][172.17.0.1:55520] server connect example.com:80 (172.66.147.243:80)
-172.17.0.1:55520: GET http://example.com/
+[19:16:05.653][172.17.0.1:58908] client disconnect
+[19:16:15.661][172.17.0.1:44272] client connect
+[19:16:15.740][172.17.0.1:44272] server connect example.com:80 (172.66.147.243:80)
+172.17.0.1:44272: GET http://example.com/?via=python-requests
                << 200 OK 400b
-172.17.0.1:55520: GET http://example.com/s.js
+[19:16:16.311][172.17.0.1:44284] client connect
+172.17.0.1:44284: GET http://example.com/
+               << 407 Proxy Authentication Required 129b
+[19:16:16.459][172.17.0.1:44284] server connect example.com:80 (104.20.23.154:80)
+172.17.0.1:44284: GET http://example.com/
+               << 200 OK 400b
+172.17.0.1:44284: GET http://example.com/s.js
                << 200 OK 1.3k
-[21:15:30.371][172.17.0.1:55534] client connect
-[21:15:30.416][172.17.0.1:55534] server connect example.org:443 (104.20.26.136:443)
-[21:15:30.681][172.17.0.1:55544] client connect
-[21:15:30.688][172.17.0.1:55534] Client TLS handshake failed. The client does not trust the proxy's certificate for example.org (OpenSSL Error([('SSL routines', '', 'tls alert certificate unknown')]))
-[21:15:30.699][172.17.0.1:55534] client disconnect
-[21:15:30.713][172.17.0.1:55534] server disconnect example.org:443 (104.20.26.136:443)
-[21:15:30.744][172.17.0.1:55544] server connect example.org:443 (104.20.26.136:443)
-172.17.0.1:55544: GET https://example.org/ HTTP/2.0
+[19:16:16.678][172.17.0.1:44300] client connect
+[19:16:16.806][172.17.0.1:44300] server connect example.org:443 (172.66.157.237:443)
+[19:16:17.156][172.17.0.1:44316] client connect
+[19:16:17.163][172.17.0.1:44300] Client TLS handshake failed. The client does not trust the proxy's certificate for example.org (OpenSSL Error([('SSL routines', '', 'tls alert certificate unknown')]))
+[19:16:17.173][172.17.0.1:44300] client disconnect
+[19:16:17.188][172.17.0.1:44300] server disconnect example.org:443 (172.66.157.237:443)
+[19:16:17.305][172.17.0.1:44316] server connect example.org:443 (172.66.157.237:443)
+172.17.0.1:44316: GET https://example.org/ HTTP/2.0
       << HTTP/2.0 200 OK 334b
-172.17.0.1:55544: GET https://example.org/s.js HTTP/2.0
+172.17.0.1:44316: GET https://example.org/s.js HTTP/2.0
       << HTTP/2.0 200 OK 1.3k

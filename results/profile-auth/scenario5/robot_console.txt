@@ -1,5 +1,5 @@
 ==============================================================================
-Proxy :: Welcher Proxy wird vom Browser genutzt? Die Browser-Konfiguration ...
+Proxy :: Welchen Proxy nutzen RequestsLibrary und Browser Library? Proxy-Ko...
 ==============================================================================
 Proxy Environment Variables :: Zeigt, welche Proxy-Variablen rcc i... HTTP_PROXY=http://proxyuser:s3cr3t@localhost:3128
 HTTPS_PROXY=http://proxyuser:s3cr3t@localhost:3128
@@ -9,11 +9,11 @@ https_proxy=http://proxyuser:s3cr3t@localhost:3128
 no_proxy=<nicht gesetzt>
 | PASS |
 ------------------------------------------------------------------------------
-Python Request (Kontrolle) :: Positivkontrolle: RequestsLibrary (r... | PASS |
+Python Request :: RequestsLibrary: ohne proxies= wertet requests H... | PASS |
 ------------------------------------------------------------------------------
 Open HTTP And HTTPS Page                                              | PASS |
 ------------------------------------------------------------------------------
-Proxy :: Welcher Proxy wird vom Browser genutzt? Die Browser-Konfi... | PASS |
+Proxy :: Welchen Proxy nutzen RequestsLibrary und Browser Library?... | PASS |
 3 tests, 3 passed, 0 failed
 ==============================================================================
 Output:  /Users/simon/Documents/01_Development/06_Minimalbeispiele/rf-web-proxytest/results/profile-auth/scenario5/output.xml
